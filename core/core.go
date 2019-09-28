@@ -98,13 +98,36 @@ type Core struct {
 func (core *Core) HttpGet(w http.ResponseWriter, r *http.Request) {
 	if strings.ToUpper(r.Method) != "GET" && strings.ToUpper(r.Method) != "HEAD" {
 		w.WriteHeader(405)
-		return // not GET? -> return 405 ("Method Not Allowed")
+		return // neither HTTP GET nor HEAD? -> return 405 ("Method Not Allowed")
 	}
 
 	u, err := url.Parse(strings.ToLower(r.URL.String()))
 	if err != nil {
 		w.WriteHeader(400)
 		return // error parsing the URL? -> HTTP 400 ("Bad Request")
+	}
+
+	bm := bluemonday.StrictPolicy()
+
+	origurlpath := strings.ToLower(r.URL.String())
+	newurlpath, err := url.PathUnescape(origurlpath)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "", 500)
+		return
+	}
+
+	newurlpath = bm.Sanitize(newurlpath)
+
+	if newurlpath != origurlpath {
+		log.Warn().Msg(fmt.Sprintf("Possible XSS: '%s' (sansitised to '%s')", origurlpath, newurlpath))
+	}
+
+	nr, err := http.NewRequest(r.Method, newurlpath, r.Body)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "", 500)
+		return
 	}
 
 	urlpath := strings.TrimSuffix(u.Path, "/")
@@ -201,28 +224,8 @@ func (core *Core) HttpGet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	//
-
-	bm := bluemonday.StrictPolicy()
-
-	origurlpath := strings.ToLower(r.URL.String())
-	newurlpath, err := url.PathUnescape(origurlpath)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "", 500)
-		return
-	}
-
-	newurlpath = bm.Sanitize(newurlpath)
-
-	if newurlpath != origurlpath {
-		log.Warn().Msg(fmt.Sprintf("Possible XSS: '%s' (sansitised to '%s')", origurlpath, newurlpath))
-	}
-
-	nr, err := http.NewRequest(r.Method, newurlpath, r.Body)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "", 500)
+	if node.RedirectTo() != "" {
+		http.Redirect(w, r, string(node.RedirectTo()), 303)
 		return
 	}
 

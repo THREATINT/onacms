@@ -34,7 +34,7 @@ func main() {
 	}
 	log := zerolog.New(output).With().Timestamp().Logger()
 
-	log.Info().Msg("onacms (C) 2017 - 2019 THREATINT")
+	log.Info().Msg("onacms (C) THREATINT")
 
 	u, err := user.Current()
 	if err == nil && u.Username == "root" {

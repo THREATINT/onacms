@@ -31,6 +31,7 @@ type XMLNode struct {
 	Enabled             string        `xml:"enabled"`
 	Content             string        `xml:"content"`
 	ContentFile         string        `xml:"content-file"`
+	RedirectTo          string        `xml:"redirect-to"`
 	ApplicationEndpoint string        `xml:"application-endpoint"`
 	Property            []XMLProperty `xml:"property"`
 }
@@ -53,7 +54,6 @@ func (n *Node) Name() string {
 }
 
 func (n *Node) Title() string {
-
 	return strings.TrimSpace(n.xmlNode.Title)
 }
 
@@ -62,7 +62,6 @@ func (n *Node) Slug() string {
 }
 
 func (n *Node) Path() template.URL {
-
 	var s bytes.Buffer
 
 	for _, node := range n.Parents() {
@@ -128,7 +127,6 @@ func (n *Node) Template() string {
 }
 
 func (n *Node) Navigable() bool {
-
 	nav := strings.ToLower(strings.TrimSpace(n.xmlNode.Navigable))
 
 	if nav == "" && n.Parent() != nil {
@@ -143,7 +141,6 @@ func (n *Node) Navigable() bool {
 }
 
 func (n *Node) Enabled() bool {
-
 	enabled := strings.ToLower(strings.TrimSpace(n.xmlNode.Enabled))
 
 	if enabled == "" && n.Parent() != nil {
@@ -225,7 +222,6 @@ func (n *Node) CustomProperty(key string, parent bool) string {
 }
 
 func (n *Node) Render() string {
-
 	switch n.Engine() {
 	case "markdown":
 		md := markdown.New(markdown.HTML(true), markdown.Nofollow(true))
@@ -236,8 +232,11 @@ func (n *Node) Render() string {
 
 }
 
-func (n *Node) ApplicationEndpoint() bool {
+func (n *Node) RedirectTo() string {
+	return strings.TrimSpace(n.xmlNode.RedirectTo)
+}
 
+func (n *Node) ApplicationEndpoint() bool {
 	appep := strings.ToLower(strings.TrimSpace(n.xmlNode.ApplicationEndpoint))
 
 	if appep == "1" || appep == "on" || strings.HasPrefix(appep, "enable") || appep == "true" {
