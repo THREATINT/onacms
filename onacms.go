@@ -62,11 +62,11 @@ func main() {
 	server := http.NewServeMux()
 
 	gzh, err := gziphandler.GzipHandlerWithOpts(
-		gziphandler.MinSize(10),
+		gziphandler.MinSize(100),
 		gziphandler.CompressionLevel(gzip.BestCompression))
 
 	server.Handle("/", gzh(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		core.HttpGet(w, r)
+		core.Http(w, r)
 	})))
 
 	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), server)

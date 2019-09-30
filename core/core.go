@@ -95,7 +95,7 @@ type Core struct {
 	ftindex     bleve.Index
 }
 
-func (core *Core) HttpGet(w http.ResponseWriter, r *http.Request) {
+func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 	if strings.ToUpper(r.Method) != "GET" && strings.ToUpper(r.Method) != "HEAD" {
 		w.WriteHeader(405)
 		return // neither HTTP GET nor HEAD? -> return 405 ("Method Not Allowed")
