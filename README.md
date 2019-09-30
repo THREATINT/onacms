@@ -7,18 +7,26 @@ Although Onacms knows about outputing content, minification, and ETags, it heavi
 ## Getting started
 
 Onacms makes use of the following three concepts:
-* Nodes (aka: pages) (/nodes): this is where your content goes. Content can be plain html or Markdown.
-* Templates (/templates): templates take the content from nodes and generate the actual output, e.g. html pages for a website, sitemap.txt, etc.
-Templates can be written in the builtin Golang html templating engine.
-* Static/public files (/public): these files are handled by onacms in the same way that you would expect from any other webserver. Use it e.g. for media files or for static files like robots.txt.
 
-Let's build and run onacms:
+- Nodes (aka: pages) (/nodes):
+This is where your content goes. Content can be plain HTML or Markdown.
+- Templates (/templates):
+Templates take the content from nodes and generate the actual output, e.g. HTML pages for a website, sitemap.txt, etc. Templates can be written in the builtin Golang HTML templating engine.
+- Static/public files (/public):
+These files are handled by onacms in the same way that you would expect from any other webserver. Use it e.g. for media files or for static files like robots.txt.
 
 ## Building and dependencies
 
-[UPX](https://upx.github.io/) and UNIX make are required to build onacms.
-
-Please run ```make``` to build.
+You can either run
+```
+go build
+```
+or
+```
+make
+```
+to build.
+```make``` requires [UPX](https://upx.github.io/) and UNIX make to be installed on your local machine.
 
 ### Docker
 
@@ -27,7 +35,7 @@ We provide a Dockerfile to use onacms in a Docker container. Please see [hub.doc
 docker pull threatint/onacms
 ```
 
-To start the container and map a local directory to /data and a local port to 10000/TCP, e.g.:
+To start the container and map a local directory read-only to /data and a local port to 10000/TCP, e.g.:
 ```
 docker run --name=mysite -p 10000:10000 -v /home/user/dir/:/data:ro threatint/onacms
 ```
@@ -35,7 +43,7 @@ docker run --name=mysite -p 10000:10000 -v /home/user/dir/:/data:ro threatint/on
 ## Running
 
 ```
-gonacms [--dir=<directory>] [--port=<TCP port>] [--log-output=JSON]
+onacms [--dir=<directory>] [--port=<TCP port>]
 ```
 _directory_ is the directory containing the actual site (/nodes /templates /public).
 
@@ -45,5 +53,5 @@ Onacms does not log interactions with clients! Please use the frontend webserver
 
 ## License
 
-Released under the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl.html). Kindly
+Released under the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl.HTML). Kindly
 contact [Team@THREATINT.com](mailto:team@threatint.com) for information on licensing for OEMs / ISVs.
