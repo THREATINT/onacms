@@ -3,7 +3,7 @@ onacms: onacms.go
 	upx --brute onacms
 
 docker:onacms
-	sudo docker build -t threatint/onacms .
+	docker build -t threatint/onacms .
 
 docker-deploy:docker
-	sudo docker push threatint/onacms
+	docker push threatint/onacms
