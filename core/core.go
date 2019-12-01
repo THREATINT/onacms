@@ -211,16 +211,17 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			// we tried almost everything ... last resort: we redirect to the first node that is available
+			// we tried almost everything ... last resort:
+			// we redirect to the first node that is available (aka: enabled)
 			for _, n := range RootNodes(core.Nodes) {
 				if n.Enabled() {
 					http.Redirect(w, r, string(n.Path()), 303)
 					return
 				}
-
-				http.Error(w, "not found", 404)
-				return
 			}
+
+			http.Error(w, "not found", 404)
+			return
 		}
 	}
 
