@@ -56,9 +56,9 @@ We provide a Dockerfile to use onacms in a Docker container. Please see [hub.doc
 docker pull threatint/onacms
 ```
 
-To start the container and map a local directory read-only to /data and a local port to 10000/TCP, e.g.:
+To start the container and map a local directory read-only to /www and a local port to 10000/TCP, e.g.:
 ```
-docker run --name=mysite -p 10000:10000 -v /home/user/dir/:/data:ro threatint/onacms
+docker run --name=mysite -p 10000:10000 -v /home/user/dir/:/www:ro threatint/onacms
 ```
 
 
