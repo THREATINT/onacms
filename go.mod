@@ -48,9 +48,9 @@ require (
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/tecbot/gorocksdb v0.0.0-20191122205208-eb0a0d0d32b3 // indirect
 	go.etcd.io/bbolt v1.3.3 // indirect
-	golang.org/x/crypto v0.0.0-20191128160524-b544559bb6d1 // indirect
-	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
-	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9 // indirect
+	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413 // indirect
+	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
+	golang.org/x/sys v0.0.0-20191210023423-ac6580df4449 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
