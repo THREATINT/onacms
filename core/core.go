@@ -29,7 +29,6 @@ import (
 var log zerolog.Logger
 
 func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
-	var messages bytes.Buffer
 
 	log = logger
 
@@ -40,11 +39,12 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 	indexMapping := bleve.NewIndexMapping()
 	ftindex, err := bleve.NewMemOnly(indexMapping)
 	if err != nil {
-		messages.WriteString(err.Error())
-		log.Error().Msg(messages.String())
+		log.Error().Msg(err.Error())
 	} else {
 		c.ftindex = ftindex
 	}
+
+	c.Headers = make(map[string]string)
 
 	c.PublicFiles = make(map[string]*PublicFile)
 
@@ -62,26 +62,26 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 	c.minifier.AddFunc("application/xml", minxml.Minify)
 	c.minifier.AddFunc("application/json", minjson.Minify)
 
+	log.Info().Msg("reading HTTP headers...")
+	c.populateHeaders("headers")
+	log.Info().Msg(fmt.Sprintf("%d HTTP header(s)", len(c.PublicFiles)))
+
+	log.Info().Msg("reading public files...")
 	c.populatePublicFiles("public")
-	messages.Reset()
-	messages.WriteString(fmt.Sprintf("%d public file(s)", len(c.PublicFiles)))
-	log.Info().Msg(messages.String())
+	log.Info().Msg(fmt.Sprintf("%d public file(s)", len(c.PublicFiles)))
 
+	log.Info().Msg("reading templates")
 	c.populateTemplates("templates")
-	messages.Reset()
-	messages.WriteString(fmt.Sprintf("%d template(s)", len(c.Templates)))
-	log.Info().Msg(messages.String())
+	log.Info().Msg(fmt.Sprintf("%d template(s)", len(c.Templates)))
 
+	log.Info().Msg("reading nodes...")
 	c.populateNodes("nodes")
-	messages.Reset()
-	messages.WriteString(fmt.Sprintf("%d node(s)", len(c.Nodes)))
-	log.Info().Msg(messages.String())
+	log.Info().Msg(fmt.Sprintf("%d node(s)", len(c.Nodes)))
 
+	log.Info().Msg("building search index...")
 	c.populateFTIndex()
 	dc, err := c.ftindex.DocCount()
-	messages.Reset()
-	messages.WriteString(fmt.Sprintf("%d node(s) in index", dc))
-	log.Info().Msg(messages.String())
+	log.Info().Msg(fmt.Sprintf("%d node(s) in index", dc))
 
 	return c
 }
@@ -90,6 +90,7 @@ type Core struct {
 	Nodes       []*Node
 	PublicFiles map[string]*PublicFile
 	Templates   map[string]*Template
+	Headers     map[string]string
 	fs          *afero.Fs
 	minifier    *minify.M
 	ftindex     bleve.Index
@@ -297,10 +298,77 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (core *Core) populatePublicFiles(dir string) {
+func (core *Core) populateHeaders(dir string) {
 	var s bytes.Buffer
 
-	log.Info().Msg("reading public (static) files")
+	afero.Walk(*core.fs, dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Error().Msg(err.Error())
+			return nil
+		} else {
+			path = filepath.Clean(path)
+			p := strings.TrimPrefix(path, dir)
+			p = strings.TrimPrefix(p, "/")
+			p = strings.ToLower(p)
+
+			if !info.IsDir() {
+				s.Reset()
+				s.WriteString("--")
+				s.WriteString(path)
+
+				file, err := afero.ReadFile(*core.fs, path)
+				if err != nil {
+					s.WriteString(" - ")
+					s.WriteString(err.Error())
+					log.Error().Msg(s.String())
+					return nil
+				}
+
+				var templ Template
+				err = templ.Read(file)
+				if err != nil {
+					s.WriteString(" - ")
+					s.WriteString(err.Error())
+					log.Error().Msg(s.String())
+					return nil
+				}
+				templ.name = p
+
+				if templ.ContentFile() != "" {
+					file, err = afero.ReadFile(*core.fs, filepath.Join(filepath.Dir(path), templ.ContentFile()))
+					if err != nil {
+						s.WriteString(" - ")
+						s.WriteString(err.Error())
+						log.Error().Msg(s.String())
+						return nil
+					} else {
+						s.WriteString(" (using ")
+						s.WriteString(templ.ContentFile())
+						s.WriteString(") ")
+
+						templ.SetContent(string(file))
+					}
+				}
+
+				gt := template.New(p)
+				gt, err = gt.Parse(templ.Content())
+				if err != nil {
+					s.WriteString(" - ")
+					s.WriteString(err.Error())
+					log.Error().Msg(s.String())
+					return nil
+				}
+
+				core.Templates[p] = &templ
+			}
+
+			return nil
+		}
+	})
+}
+
+func (core *Core) populatePublicFiles(dir string) {
+	var s bytes.Buffer
 
 	afero.Walk(*core.fs, dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -340,8 +408,6 @@ func (core *Core) populatePublicFiles(dir string) {
 
 func (core *Core) populateTemplates(dir string) {
 	var s bytes.Buffer
-
-	log.Info().Msg("reading Templates")
 
 	afero.Walk(*core.fs, dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
