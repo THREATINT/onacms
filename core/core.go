@@ -44,7 +44,7 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 		c.ftindex = ftindex
 	}
 
-	c.Headers = make(map[string]string)
+	c.HttpHeaders = &HTTPHeaders{}
 
 	c.PublicFiles = make(map[string]*PublicFile)
 
@@ -63,8 +63,8 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 	c.minifier.AddFunc("application/json", minjson.Minify)
 
 	log.Info().Msg("reading HTTP headers...")
-	c.populateHeaders("headers.conf")
-	log.Info().Msg(fmt.Sprintf("%d HTTP header(s)", len(c.PublicFiles)))
+	c.populateHeaders("httpheaders.xml")
+	log.Info().Msg(fmt.Sprintf("%d HTTP header(s)", len(c.HttpHeaders.Uri)))
 
 	log.Info().Msg("reading public files...")
 	c.populatePublicFiles("public")
@@ -90,7 +90,7 @@ type Core struct {
 	Nodes       []*Node
 	PublicFiles map[string]*PublicFile
 	Templates   map[string]*Template
-	Headers     map[string]string
+	HttpHeaders *HTTPHeaders
 	fs          *afero.Fs
 	minifier    *minify.M
 	ftindex     bleve.Index
@@ -153,6 +153,8 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 
 	urlpath = strings.TrimPrefix(urlpath, "/")
 
+	var content []byte
+
 	// we start by searching the static content:
 	f := core.PublicFiles[urlpath]
 	if f != nil {
@@ -168,143 +170,168 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", f.MimeType)
-		if _, err = w.Write(f.Content); err != nil {
-			w.WriteHeader(500)
+
+		content = f.Content
+	} else {
+		// we have not found matching static content, so we start searching our nodes list:
+		node := FindNode(urlpath, core.Nodes)
+		if node == nil {
+			node = FindApplicationEndpointNode(urlpath, core.Nodes)
+			if node == nil {
+				node = FindFallbackNode(urlpath, core.Nodes)
+
+				if node != nil {
+					http.Redirect(w, r, string(node.Path()), 303)
+					return
+				}
+
+				var acceptLang = TIhttp.ParseAcceptLanguage(r.Header.Get("Accept-Language"))
+
+				// we have not found a matching node yet
+				// fallback is to get the best match (based on language) from the root nodes
+				for _, l := range acceptLang {
+					for _, n := range RootNodes(core.Nodes) {
+						if n.Language() == l.Lang && n.Enabled() {
+							http.Redirect(w, r, string(n.Path()), 303)
+							return
+						}
+					}
+				}
+
+				// since we have reached this line, we still have not found a matching language
+				// Maybe the user does only accept e.g. "en-US", but our site is configured to use "en",
+				// let's try to ignore the country part of the locale requested:
+				for _, l := range acceptLang {
+					for _, n := range RootNodes(core.Nodes) {
+						if n.Language() == strings.Split(l.Lang, "-")[0] && n.Enabled() {
+							http.Redirect(w, r, string(n.Path()), 303)
+							return
+						}
+					}
+				}
+
+				// we tried almost everything ... last resort:
+				// we redirect to the first node that is available (aka: enabled)
+				for _, n := range RootNodes(core.Nodes) {
+					if n.Enabled() {
+						http.Redirect(w, r, string(n.Path()), 303)
+						return
+					}
+				}
+
+				// you guessed it: we give up!
+				// Nothing to be found here!
+				// We are done.
+				http.Error(w, "not found", 404)
+				return
+			}
 		}
 
-		return
-	}
+		if node.RedirectTo() != "" {
+			http.Redirect(w, r, string(node.RedirectTo()), 303)
+			return
+		}
 
-	// we have not found matching static content, so we start searching our nodes list:
-	node := FindNode(urlpath, core.Nodes)
-	if node == nil {
-		node = FindApplicationEndpointNode(urlpath, core.Nodes)
-		if node == nil {
-			node = FindFallbackNode(urlpath, core.Nodes)
+		context := Context{
+			HttpRequest:   nr,
+			Node:          node,
+			Content:       node.Render(),
+			AllNodes:      core.Nodes,
+			PublicFiles:   core.PublicFiles,
+			FulltextIndex: core.ftindex,
+		}
 
-			if node != nil {
-				http.Redirect(w, r, string(node.Path()), 303)
+		t := core.Templates[node.Template()]
+		if t == nil {
+			log.Error().Msg(lr.String())
+			return
+		}
+
+		for {
+			var buf bytes.Buffer
+			gt := template.New(t.Name())
+			gt, err = gt.Parse(t.Content())
+
+			if err != nil {
+				log.Error().Msg(lr.String() + err.Error())
+				w.WriteHeader(500)
 				return
 			}
 
-			var acceptLang = TIhttp.ParseAcceptLanguage(r.Header.Get("Accept-Language"))
-
-			// we have not found a matching node yet
-			// fallback is to get the best match (based on language) from the root nodes
-			for _, l := range acceptLang {
-				for _, n := range RootNodes(core.Nodes) {
-					if n.Language() == l.Lang && n.Enabled() {
-						http.Redirect(w, r, string(n.Path()), 303)
-						return
-					}
-				}
+			err = gt.Execute(&buf, &context)
+			if err != nil {
+				log.Error().Msg(lr.String() + err.Error())
+				w.WriteHeader(500)
+				return
 			}
 
-			// since we have reached this line, we still have not found a matching language
-			// Maybe the user does only accept e.g. "en-US", but our site is configured to use "en",
-			// let's try to ignore the country part of the locale requested:
-			for _, l := range acceptLang {
-				for _, n := range RootNodes(core.Nodes) {
-					if n.Language() == strings.Split(l.Lang, "-")[0] && n.Enabled() {
-						http.Redirect(w, r, string(n.Path()), 303)
-						return
-					}
-				}
+			context.Content = buf.String()
+			if t.Parent() == "" {
+				break
 			}
 
-			// we tried almost everything ... last resort:
-			// we redirect to the first node that is available (aka: enabled)
-			for _, n := range RootNodes(core.Nodes) {
-				if n.Enabled() {
-					http.Redirect(w, r, string(n.Path()), 303)
-					return
-				}
-			}
-
-			// you guessed it: we give up!
-			// Nothing to be found here!
-			// We are done.
-			http.Error(w, "not found", 404)
-			return
+			t = core.Templates[t.Parent()]
 		}
-	}
 
-	if node.RedirectTo() != "" {
-		http.Redirect(w, r, string(node.RedirectTo()), 303)
-		return
-	}
-
-	context := Context{
-		HttpRequest:   nr,
-		Node:          node,
-		Content:       node.Render(),
-		AllNodes:      core.Nodes,
-		PublicFiles:   core.PublicFiles,
-		FulltextIndex: core.ftindex,
-	}
-
-	t := core.Templates[node.Template()]
-	if t == nil {
-		log.Error().Msg(lr.String())
-		return
-	}
-
-	for {
-		var buf bytes.Buffer
-		gt := template.New(t.Name())
-		gt, err = gt.Parse(t.Content())
-
+		// Minify the content
+		page, err := core.minifier.String(t.MimeType(), string(context.Content))
 		if err != nil {
-			log.Error().Msg(lr.String() + err.Error())
-			w.WriteHeader(500)
-			return
+			// If it goes wrong for any reason, we leave the original content untouched and continue
+			page = string(context.Content)
+
+			log.Warn().Msg(err.Error())
 		}
 
-		err = gt.Execute(&buf, &context)
-		if err != nil {
-			log.Error().Msg(lr.String() + err.Error())
-			w.WriteHeader(500)
-			return
+		etag := crypto.SHA256(page)
+
+		// send ETag, no matter if 200 or 304 (see https://tools.ietf.org/html/rfc7232#section-4.1)
+		w.Header().Set("Etag", etag)
+
+		inm := r.Header.Get("If-None-Match")
+		if inm != "" && strings.Contains(inm, etag) {
+			w.WriteHeader(304)
+			return // no change here!
 		}
 
-		context.Content = buf.String()
-		if t.Parent() == "" {
-			break
+		w.Header().Set("Content-Type", t.MimeType()+"; charset=utf-8\n")
+
+		if strings.ToUpper(r.Method) != "HEAD" {
+			content = []byte(page)
 		}
-
-		t = core.Templates[t.Parent()]
 	}
 
-	// Minify the content
-	page, err := core.minifier.String(t.MimeType(), string(context.Content))
-	if err != nil {
-		// If it goes wrong for any reason, we leave the original content untouched and continue
-		page = string(context.Content)
-
-		log.Warn().Msg(err.Error())
+	for _, h := range core.HttpHeaders.Match(urlpath) {
+		r := strings.SplitN(h, ":", 2)
+		w.Header().Add(strings.TrimSpace(r[0]), strings.TrimSpace(r[1]))
 	}
 
-	etag := crypto.SHA256(page)
-
-	// send ETag, no matter if 200 or 304 (see https://tools.ietf.org/html/rfc7232#section-4.1)
-	w.Header().Set("Etag", etag)
-
-	inm := r.Header.Get("If-None-Match")
-	if inm != "" && strings.Contains(inm, etag) {
-		w.WriteHeader(304)
-		return // no change here!
-	}
-
-	w.Header().Set("Content-Type", t.MimeType()+"; charset=utf-8\n")
-
-	if strings.ToUpper(r.Method) != "HEAD" {
-		w.Write([]byte(page))
+	if _, err = w.Write(content); err != nil {
+		w.WriteHeader(500)
 	}
 }
 
-func (core *Core) populateHeaders(file string) {
-	//var s bytes.Buffer
+func (core *Core) populateHeaders(filename string) {
+	var s bytes.Buffer
 
+	file, err := afero.ReadFile(*core.fs, filename)
+	if err != nil {
+		s.WriteString(" - ")
+		s.WriteString(err.Error())
+		log.Error().Msg(s.String())
+
+		return
+	}
+
+	err = core.HttpHeaders.Read(file)
+	if err != nil {
+		s.WriteString(" - ")
+		s.WriteString(err.Error())
+		log.Error().Msg(s.String())
+	}
+
+	for _, uri := range core.HttpHeaders.Uri {
+		uri.Expression = strings.ToLower(uri.Expression)
+	}
 }
 
 func (core *Core) populatePublicFiles(dir string) {

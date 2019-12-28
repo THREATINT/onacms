@@ -2,30 +2,36 @@ package core
 
 import (
 	"encoding/xml"
+	"strings"
+
+	"github.com/bmatcuk/doublestar"
 )
 
-type HTTPHeaders struct {
-	XMLName             xml.Name      `xml:"node"`
-	Title               string        `xml:"title"`
-	Description         string        `xml:"description"`
-	Weight              string        `xml:"weight"`
-	Created             string        `xml:"created"`
-	LastModified        string        `xml:"lastmodified"`
-	Language            string        `xml:"language"`
-	Engine              string        `xml:"engine"`
-	Template            string        `xml:"template"`
-	Navigable           string        `xml:"navigable"`
-	Enabled             string        `xml:"enabled"`
-	Content             string        `xml:"content"`
-	ContentFile         string        `xml:"content-file"`
-	RedirectTo          string        `xml:"redirect-to"`
-	ApplicationEndpoint string        `xml:"application-endpoint"`
-	Property            []XMLProperty `xml:"property"`
+type Uri struct {
+	Expression string   `xml:"expression,attr"`
+	Header     []string `xml:"header"`
 }
 
-type Node struct {
-	xmlNode  XMLNode
-	name     string
-	parent   *Node
-	children []*Node
+type HTTPHeaders struct {
+	Uri []Uri `xml:"uri"`
+}
+
+func (h *HTTPHeaders) Read(r []byte) error {
+	return xml.Unmarshal(r, &h)
+}
+
+func (h *HTTPHeaders) Match(slug string) []string {
+	var result []string
+	slug = strings.ToLower(slug)
+
+	for _, uri := range h.Uri {
+		m, err := doublestar.Match(uri.Expression, slug)
+		if m && err == nil {
+			for _, h := range uri.Header {
+				result = append(result, h)
+			}
+		}
+	}
+
+	return result
 }
