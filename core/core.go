@@ -63,7 +63,7 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 	c.minifier.AddFunc("application/json", minjson.Minify)
 
 	log.Info().Msg("reading HTTP headers...")
-	c.populateHeaders("headers")
+	c.populateHeaders("headers.conf")
 	log.Info().Msg(fmt.Sprintf("%d HTTP header(s)", len(c.PublicFiles)))
 
 	log.Info().Msg("reading public files...")
@@ -202,7 +202,7 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 
 			// since we have reached this line, we still have not found a matching language
 			// Maybe the user does only accept e.g. "en-US", but our site is configured to use "en",
-			// let's try to ignore the country part of the locale:
+			// let's try to ignore the country part of the locale requested:
 			for _, l := range acceptLang {
 				for _, n := range RootNodes(core.Nodes) {
 					if n.Language() == strings.Split(l.Lang, "-")[0] && n.Enabled() {
@@ -275,6 +275,7 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 		t = core.Templates[t.Parent()]
 	}
 
+	// Minify the content
 	page, err := core.minifier.String(t.MimeType(), string(context.Content))
 	if err != nil {
 		// If it goes wrong for any reason, we leave the original content untouched and continue
@@ -301,73 +302,9 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (core *Core) populateHeaders(dir string) {
-	var s bytes.Buffer
+func (core *Core) populateHeaders(file string) {
+	//var s bytes.Buffer
 
-	afero.Walk(*core.fs, dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return nil
-		} else {
-			path = filepath.Clean(path)
-			p := strings.TrimPrefix(path, dir)
-			p = strings.TrimPrefix(p, "/")
-			p = strings.ToLower(p)
-
-			if !info.IsDir() {
-				s.Reset()
-				s.WriteString("--")
-				s.WriteString(path)
-
-				file, err := afero.ReadFile(*core.fs, path)
-				if err != nil {
-					s.WriteString(" - ")
-					s.WriteString(err.Error())
-					log.Error().Msg(s.String())
-					return nil
-				}
-
-				var templ Template
-				err = templ.Read(file)
-				if err != nil {
-					s.WriteString(" - ")
-					s.WriteString(err.Error())
-					log.Error().Msg(s.String())
-					return nil
-				}
-				templ.name = p
-
-				if templ.ContentFile() != "" {
-					file, err = afero.ReadFile(*core.fs, filepath.Join(filepath.Dir(path), templ.ContentFile()))
-					if err != nil {
-						s.WriteString(" - ")
-						s.WriteString(err.Error())
-						log.Error().Msg(s.String())
-						return nil
-					} else {
-						s.WriteString(" (using ")
-						s.WriteString(templ.ContentFile())
-						s.WriteString(") ")
-
-						templ.SetContent(string(file))
-					}
-				}
-
-				gt := template.New(p)
-				gt, err = gt.Parse(templ.Content())
-				if err != nil {
-					s.WriteString(" - ")
-					s.WriteString(err.Error())
-					log.Error().Msg(s.String())
-					return nil
-				}
-
-				core.Templates[p] = &templ
-			}
-
-			return nil
-		}
-	})
 }
 
 func (core *Core) populatePublicFiles(dir string) {
