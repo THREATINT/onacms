@@ -198,16 +198,16 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 				}
+			}
 
-				// since we have reached this line, we still have not found a matching language
-				// Maybe the user does only accept e.g. "en-US", but our site is configured to use "en",
-				// let's try to ignore the country part of the locale:
-				for _, l := range acceptLang {
-					for _, n := range RootNodes(core.Nodes) {
-						if n.Language() == strings.Split(l.Lang, "-")[0] && n.Enabled() {
-							http.Redirect(w, r, string(n.Path()), 303)
-							return
-						}
+			// since we have reached this line, we still have not found a matching language
+			// Maybe the user does only accept e.g. "en-US", but our site is configured to use "en",
+			// let's try to ignore the country part of the locale:
+			for _, l := range acceptLang {
+				for _, n := range RootNodes(core.Nodes) {
+					if n.Language() == strings.Split(l.Lang, "-")[0] && n.Enabled() {
+						http.Redirect(w, r, string(n.Path()), 303)
+						return
 					}
 				}
 			}
@@ -221,6 +221,9 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+			// you guessed it: we give up!
+			// Nothing to be found here!
+			// We are done.
 			http.Error(w, "not found", 404)
 			return
 		}
