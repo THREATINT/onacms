@@ -6,7 +6,7 @@ import (
 
 /**
 Searches for an exact match for path in the array of nodes, return nil if there is none.
- */
+*/
 func FindNode(path string, nodes []*Node) *Node {
 	path = strings.TrimSpace(strings.ToLower(path))
 
@@ -26,7 +26,7 @@ func FindNode(path string, nodes []*Node) *Node {
 /**
 Search for the best match for a given path (right to left) where application-endpoint is set as property of
 that node, return nil if there is none.
- */
+*/
 func FindApplicationEndpointNode(path string, nodes []*Node) *Node {
 	path = strings.TrimSpace(strings.ToLower(path))
 
@@ -52,7 +52,7 @@ func FindApplicationEndpointNode(path string, nodes []*Node) *Node {
 
 /**
 Search for the best match for a given path (right to left), return nil if there is none.
- */
+*/
 func FindFallbackNode(path string, nodes []*Node) *Node {
 	path = strings.TrimSpace(strings.ToLower(path))
 
@@ -82,18 +82,6 @@ func RootNodes(nodes []*Node) []*Node {
 	}
 	return nil
 }
-
-/*
-func Siblings(node *Node, nodes []*Node) []*Node {
-	siblings := []*Node{}
-	for _, n := range SiblingsAndSelf(node, nodes) {
-		if n != node {
-			siblings = append(siblings, n)
-		}
-	}
-	return siblings
-}
-*/
 
 func SiblingsAndSelf(node *Node, nodes []*Node) []*Node {
 	if node.Parent() != nil {

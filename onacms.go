@@ -20,11 +20,6 @@ func main() {
 	var (
 		dir  = kingpin.Flag("dir", "directory containing the site (/public /nodes /templates)").Default("/www").String()
 		port = kingpin.Flag("port", "(optional) TCP port").Default("10000").Int16()
-		//logformat   = kingpin.Flag("log-format", "(option) set to JSON for e.g.logstash").String()
-		//application = kingpin.Flag("application", "(option) used for logging").String()
-		//instance    = kingpin.Flag("instance", "(option) used for logging").String()
-		//debug       = kingpin.Flag("debug", "(optional) log debug messages").Default("false").Bool()
-		//local       = kingpin.Flag("local", "(optional) run locally, ").Default("false").Bool()
 	)
 
 	kingpin.Parse()

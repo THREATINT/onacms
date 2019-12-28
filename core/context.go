@@ -26,7 +26,6 @@ func (context *Context) RootNodes() []*Node {
 }
 
 func (context *Context) InjectIntoPage(path string) string {
-
 	path = strings.TrimPrefix(path, "/")
 	path = strings.ToLower(path)
 
@@ -40,7 +39,6 @@ func (context *Context) InjectIntoPage(path string) string {
 }
 
 func (context *Context) Search(term string, maxresults int) []SearchResult {
-
 	term = strings.Replace(term, "*", " ", -1)
 	term = strings.Replace(term, "?", " ", -1)
 	term = strings.TrimSpace(term)
