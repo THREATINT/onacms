@@ -186,8 +186,9 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 
 				var acceptLang = TIhttp.ParseAcceptLanguage(r.Header.Get("Accept-Language"))
 
-				// we have not found a matching node yet
-				// fallback is to get the best match (based on language) from the root nodes
+				// We have not found a matching node yet.
+				//
+				// Fallback is to get the best match (based on language) from the root nodes
 				for _, l := range acceptLang {
 					for _, n := range RootNodes(core.Nodes) {
 						if n.Language() == l.Lang && n.Enabled() {
@@ -197,7 +198,8 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 
-				// since we have reached this line, we still have not found a matching language
+				// Since we have reached this line, we still have not found a matching language.
+				//
 				// Maybe the user does only accept e.g. "en-US", but our site is configured to use "en",
 				// let's try to ignore the country part of the locale requested:
 				for _, l := range acceptLang {
@@ -227,7 +229,7 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if node.RedirectTo() != "" {
-			http.Redirect(w, r, string(node.RedirectTo()), 303)
+			http.Redirect(w, r, strings.TrimSpace(string(node.RedirectTo())), 303)
 			return
 		}
 

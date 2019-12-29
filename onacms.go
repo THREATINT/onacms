@@ -34,7 +34,7 @@ func main() {
 
 	u, err := user.Current()
 	if err == nil && u.Username == "root" {
-		log.Warn().Msg("please do not run as root!")
+		log.Warn().Msg("please do not run as root")
 	}
 
 	fs := afero.NewBasePathFs(afero.NewOsFs(), *dir)
