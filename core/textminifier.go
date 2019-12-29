@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"regexp"
 
-	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/v2"
 )
 
 type TextMinifier struct{}

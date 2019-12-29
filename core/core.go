@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"text/template"
@@ -18,12 +19,13 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/rs/zerolog"
 	"github.com/spf13/afero"
-	"github.com/tdewolff/minify"
-	mincss "github.com/tdewolff/minify/css"
-	minhtml "github.com/tdewolff/minify/html"
-	minjs "github.com/tdewolff/minify/js"
-	minjson "github.com/tdewolff/minify/json"
-	minxml "github.com/tdewolff/minify/xml"
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/svg"
+	"github.com/tdewolff/minify/v2/css"
+	"github.com/tdewolff/minify/v2/html"
+	"github.com/tdewolff/minify/v2/js"
+	"github.com/tdewolff/minify/v2/json"
+	"github.com/tdewolff/minify/v2/xml"
 )
 
 var log zerolog.Logger
@@ -51,16 +53,13 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 	c.Templates = make(map[string]*Template)
 
 	c.minifier = minify.New()
-	c.minifier.Add("text/html", &minhtml.Minifier{
-		KeepDocumentTags: true,
-		KeepEndTags:      true,
-	})
-	c.minifier.AddFunc("text/css", mincss.Minify)
 	c.minifier.AddFunc("text/plain", TextMinify.Minify)
-	c.minifier.AddFunc("text/cache-manifest", TextMinify.Minify)
-	c.minifier.AddFunc("application/javascript", minjs.Minify)
-	c.minifier.AddFunc("application/xml", minxml.Minify)
-	c.minifier.AddFunc("application/json", minjson.Minify)
+	c.minifier.AddFunc("text/css", css.Minify)
+	c.minifier.AddFunc("text/html", html.Minify)
+	c.minifier.AddFunc("image/svg+xml", svg.Minify)
+	c.minifier.AddFuncRegexp(regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$"), js.Minify)
+	c.minifier.AddFuncRegexp(regexp.MustCompile("[/+]json$"), json.Minify)
+	c.minifier.AddFuncRegexp(regexp.MustCompile("[/+]xml$"), xml.Minify)
 
 	log.Info().Msg("reading HTTP headers...")
 	c.populateHeaders("httpheaders.xml")
