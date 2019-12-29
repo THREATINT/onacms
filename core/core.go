@@ -282,11 +282,12 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 			log.Warn().Msg(err.Error())
 		}
 
-		etag := crypto.SHA256(page)
+		etag := crypto.RIPEMD160(page)
 
 		// send ETag, no matter if 200 or 304 (see https://tools.ietf.org/html/rfc7232#section-4.1)
 		w.Header().Set("Etag", etag)
 
+		// Etag in request matches our Etag? -> content has not chanced
 		inm := r.Header.Get("If-None-Match")
 		if inm != "" && strings.Contains(inm, etag) {
 			// no change here
