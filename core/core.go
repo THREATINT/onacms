@@ -97,9 +97,16 @@ type Core struct {
 }
 
 func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
+
+	// we do not understand HTTP Range requests -> ignore
+	// see https://tools.ietf.org/html/rfc7233#section-1.1
+	// - no action needed -
+
+	// Allow only HTTP GET and HEAD
 	if strings.ToUpper(r.Method) != "GET" && strings.ToUpper(r.Method) != "HEAD" {
+		// neither HTTP GET nor HEAD? -> return 405 ("Method Not Allowed")
 		w.WriteHeader(405)
-		return // neither HTTP GET nor HEAD? -> return 405 ("Method Not Allowed")
+		return
 	}
 
 	u, err := url.Parse(strings.ToLower(r.URL.String()))
@@ -108,17 +115,6 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
-
-	var lr bytes.Buffer
-	lr.WriteString(r.RemoteAddr)
-	lr.WriteString(" ")
-	lr.WriteString(r.Method)
-	lr.WriteString(" ")
-	lr.WriteString(r.Host)
-	lr.WriteString(r.RequestURI)
-	lr.WriteString(" ")
-	lr.WriteString(r.URL.Port())
-	lr.WriteString(" - ")
 
 	// normalise + sanitise URL
 	origurlpath := strings.ToLower(r.URL.String())
@@ -242,6 +238,17 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 			FulltextIndex: core.ftindex,
 		}
 
+		var lr bytes.Buffer
+		lr.WriteString(r.RemoteAddr)
+		lr.WriteString(" ")
+		lr.WriteString(r.Method)
+		lr.WriteString(" ")
+		lr.WriteString(r.Host)
+		lr.WriteString(r.RequestURI)
+		lr.WriteString(" ")
+		lr.WriteString(r.URL.Port())
+		lr.WriteString(" - ")
+
 		t := core.Templates[node.Template()]
 		if t == nil {
 			log.Error().Msg(lr.String())
@@ -254,14 +261,14 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 			gt, err = gt.Parse(t.Content())
 
 			if err != nil {
-				log.Error().Msg(lr.String() + err.Error())
+				log.Error().Msg(fmt.Sprintf("%s: %s", lr.String(), err.Error()))
 				w.WriteHeader(500)
 				return
 			}
 
 			err = gt.Execute(&buf, &context)
 			if err != nil {
-				log.Error().Msg(lr.String() + err.Error())
+				log.Error().Msg(fmt.Sprintf("%s: %s", lr.String(), err.Error()))
 				w.WriteHeader(500)
 				return
 			}
@@ -290,12 +297,11 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 		// Etag in request matches our Etag? -> content has not chanced
 		inm := r.Header.Get("If-None-Match")
 		if inm != "" && strings.Contains(inm, etag) {
-			// no change here
 			w.WriteHeader(304)
 			return
 		}
 
-		w.Header().Set("Content-Type", t.MimeType()+"; charset=utf-8\n")
+		w.Header().Set("Content-Type", t.MimeType()+"; charset=UTF-8")
 
 		if strings.ToUpper(r.Method) != "HEAD" {
 			// don't send body if HTTP Method is HEAD
