@@ -3,6 +3,7 @@ onacms:
 
 docker:onacms
 	upx --brute onacms
+	dos2unix Dockerfile
 	docker build -t threatint/onacms .
 
 docker-deploy:docker

@@ -104,38 +104,8 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 
 	u, err := url.Parse(strings.ToLower(r.URL.String()))
 	if err != nil {
+		// error parsing the URL? -> HTTP 400 ("Bad Request")
 		w.WriteHeader(400)
-		return // error parsing the URL? -> HTTP 400 ("Bad Request")
-	}
-
-	bm := bluemonday.StrictPolicy()
-
-	origurlpath := strings.ToLower(r.URL.String())
-	newurlpath, err := url.PathUnescape(origurlpath)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "", 500)
-		return
-	}
-
-	newurlpath = bm.Sanitize(newurlpath)
-
-	if newurlpath != origurlpath {
-		log.Warn().Msg(fmt.Sprintf("Possible XSS: '%s' (sansitised to '%s')", origurlpath, newurlpath))
-	}
-
-	nr, err := http.NewRequest(r.Method, newurlpath, r.Body)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "", 500)
-		return
-	}
-
-	urlpath := strings.TrimSuffix(u.Path, "/")
-	if u.Path != urlpath && urlpath != "" {
-		// if suffix '/' is present, redirect to url without suffix
-		// to avoid "duplicate content" problem with search engines
-		http.Redirect(w, r, string(urlpath), 303)
 		return
 	}
 
@@ -148,9 +118,37 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 	lr.WriteString(r.RequestURI)
 	lr.WriteString(" ")
 	lr.WriteString(r.URL.Port())
-
 	lr.WriteString(" - ")
 
+	// normalise + sanitise URL
+	origurlpath := strings.ToLower(r.URL.String())
+	newurlpath, err := url.PathUnescape(origurlpath)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "", 500)
+		return
+	}
+
+	bm := bluemonday.StrictPolicy()
+
+	newurlpath = bm.Sanitize(newurlpath)
+
+	if newurlpath != origurlpath {
+		log.Warn().Msg(fmt.Sprintf("Possible XSS: '%s' (sansitised to '%s')", origurlpath, newurlpath))
+		http.Redirect(w, r, string(newurlpath), 303)
+		return
+	}
+
+	// further normalisation:
+	// if suffix '/' is present, redirect to url without suffix
+	// to avoid "duplicate content" problem with search engines
+	urlpath := strings.TrimSuffix(u.Path, "/")
+	if u.Path != urlpath && urlpath != "" {
+		http.Redirect(w, r, string(urlpath), 303)
+		return
+	}
+
+	// remove leading slash ("/")
 	urlpath = strings.TrimPrefix(urlpath, "/")
 
 	var content []byte
@@ -165,8 +163,9 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 
 		inm := r.Header.Get("If-None-Match")
 		if inm != "" && strings.Contains(inm, etag) {
+			// no change here
 			w.WriteHeader(304)
-			return // no change here!
+			return
 		}
 
 		w.Header().Set("Content-Type", f.MimeType)
@@ -233,7 +232,7 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 		}
 
 		context := Context{
-			HttpRequest:   nr,
+			HttpRequest:   r,
 			Node:          node,
 			Content:       node.Render(),
 			AllNodes:      core.Nodes,
@@ -278,7 +277,6 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			// If it goes wrong for any reason, we leave the original content untouched and continue
 			page = string(context.Content)
-
 			log.Warn().Msg(err.Error())
 		}
 
@@ -289,22 +287,26 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 
 		inm := r.Header.Get("If-None-Match")
 		if inm != "" && strings.Contains(inm, etag) {
+			// no change here
 			w.WriteHeader(304)
-			return // no change here!
+			return
 		}
 
 		w.Header().Set("Content-Type", t.MimeType()+"; charset=utf-8\n")
 
 		if strings.ToUpper(r.Method) != "HEAD" {
+			// don't send body if HTTP Method is HEAD
 			content = []byte(page)
 		}
 	}
 
+	// set HTTP headers based on URI
 	for _, h := range core.HttpHeaders.Match(urlpath) {
 		r := strings.SplitN(h, ":", 2)
 		w.Header().Add(strings.TrimSpace(r[0]), strings.TrimSpace(r[1]))
 	}
 
+	// write content to response
 	if _, err = w.Write(content); err != nil {
 		w.WriteHeader(500)
 	}

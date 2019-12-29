@@ -9,6 +9,8 @@ github.com/THREATINT/go-crypto v0.0.0-20190704175339-1fa0f8d957ff h1:1FixZUGEkWJ
 github.com/THREATINT/go-crypto v0.0.0-20190704175339-1fa0f8d957ff/go.mod h1:7kf5XyarQjJeKadnrmA8cwSkL04bXBzXsTJL1Jq+mWw=
 github.com/THREATINT/go-crypto v0.0.0-20191215154324-6902e79b4399 h1:sgaDkz21BrNCVjtuJtqEwNlBkio2Z7oNiUWajpmKpFo=
 github.com/THREATINT/go-crypto v0.0.0-20191215154324-6902e79b4399/go.mod h1:7kf5XyarQjJeKadnrmA8cwSkL04bXBzXsTJL1Jq+mWw=
+github.com/THREATINT/go-crypto v0.0.0-20191228232050-ef08702f840e h1:znF1HUP4kOxoHIHj2BOAiWCv7xYOc9eBGVAGFNC5s0g=
+github.com/THREATINT/go-crypto v0.0.0-20191228232050-ef08702f840e/go.mod h1:IA23LjSAIunYruhbOc7KikMc+twFCMLbbtM/rWQqhvs=
 github.com/THREATINT/go-http v0.0.0-20190704175350-4397ea50ea99 h1:lvAKCVHT5s3yuF+R58va3vvlOKX5WlCsJpQCH+xsYTc=
 github.com/THREATINT/go-http v0.0.0-20190704175350-4397ea50ea99/go.mod h1:CHvCGEdJEUgLfui6Rp7DqmFN1+2U7KHR8fR1IhhyZh8=
 github.com/THREATINT/go-http v0.0.0-20191215164003-1eaf788ebf20 h1:eC7fsAe419ILql9FBWw72H1OTgABt22SlYtN9htE/RQ=
