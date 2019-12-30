@@ -151,7 +151,7 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 	// we start by searching the static content:
 	f := core.PublicFiles[urlpath]
 	if f != nil {
-		etag := crypto.SHA256(string(f.Content[:]))
+		etag := crypto.RIPEMD160(string(f.Content[:]))
 
 		// send ETag, no matter if 200 or 304 (see https://tools.ietf.org/html/rfc7232#section-4.1)
 		w.Header().Set("Etag", etag)
