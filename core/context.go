@@ -26,12 +26,10 @@ func (context *Context) RootNodes() []*Node {
 }
 
 func (context *Context) InjectIntoPage(path string) string {
-	path = strings.TrimPrefix(path, "/")
-	path = strings.ToLower(path)
+	path = strings.ToLower(strings.TrimPrefix(path, "/"))
 
 	c := context.PublicFiles[path]
 	if c != nil {
-
 		return string(c.Content)
 	}
 
