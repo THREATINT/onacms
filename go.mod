@@ -5,8 +5,8 @@ go 1.13
 require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/RoaringBitmap/roaring v0.4.21 // indirect
-	github.com/THREATINT/go-crypto v0.0.0-20191228232050-ef08702f840e
-	github.com/THREATINT/go-http v0.0.0-20191215164003-1eaf788ebf20
+	github.com/THREATINT/go-crypto v0.0.0-20200103092120-6bbea8e18ad7
+	github.com/THREATINT/go-http v0.0.0-20200103092529-6f2f78df77f2
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/blevesearch/bleve v0.8.1
@@ -31,7 +31,7 @@ require (
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
-	github.com/kr/pretty v0.1.0 // indirect
+	github.com/kr/pretty v0.2.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/onsi/gomega v1.8.1 // indirect
@@ -44,15 +44,13 @@ require (
 	github.com/spf13/afero v1.2.2
 	github.com/steveyen/gtreap v0.0.0-20150807155958-0abe01ef9be2 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
-	github.com/tdewolff/minify v2.3.6+incompatible
-	github.com/tdewolff/minify/v2 v2.6.1
-	github.com/tdewolff/parse v2.3.4+incompatible // indirect
-	github.com/tdewolff/parse/v2 v2.4.1 // indirect
+	github.com/tdewolff/minify/v2 v2.7.0
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
 	github.com/tinylib/msgp v1.1.1 // indirect
 	go.etcd.io/bbolt v1.3.3 // indirect
+	golang.org/x/crypto v0.0.0-20200109152110-61a87790db17 // indirect
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
-	golang.org/x/sys v0.0.0-20191228213918-04cbcbbfeed8 // indirect
+	golang.org/x/sys v0.0.0-20200107162124-548cf772de50 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6

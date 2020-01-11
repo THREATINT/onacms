@@ -62,7 +62,7 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 	c.minifier.AddFuncRegexp(regexp.MustCompile("[/+]xml$"), xml.Minify)
 
 	log.Info().Msg("reading HTTP headers...")
-	c.populateHeaders("httpheaders.xml")
+	c.populateHeaders("http-headers.xml")
 	log.Info().Msg(fmt.Sprintf("%d HTTP header(s)", len(c.HttpHeaders.Uri)))
 
 	log.Info().Msg("reading public files...")
