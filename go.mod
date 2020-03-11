@@ -22,6 +22,7 @@ require (
 	github.com/facebookgo/ensure v0.0.0-20200202191622-63f1cf65ac4c // indirect
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4 // indirect
+	github.com/fsnotify/fsnotify v1.4.8 // indirect
 	github.com/glycerine/go-unsnap-stream v0.0.0-20190901134440-81cf024a9e0a // indirect
 	github.com/golang-commonmark/html v0.0.0-20180910111043-7d7c804e1d46 // indirect
 	github.com/golang-commonmark/linkify v0.0.0-20180910111149-f05efb453a0e // indirect
@@ -49,9 +50,9 @@ require (
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/tdewolff/minify/v2 v2.7.2
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
-	github.com/tinylib/msgp v1.1.1 // indirect
+	github.com/tinylib/msgp v1.1.2 // indirect
 	go.etcd.io/bbolt v1.3.3 // indirect
-	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect
+	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073 // indirect
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
 	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 // indirect
 	golang.org/x/text v0.3.2 // indirect
