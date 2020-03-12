@@ -207,6 +207,8 @@ github.com/tdewolff/minify/v2 v2.7.0 h1:z1+mk91VJ5lyspFq9QVbgiPKqYP4r7rTz4CfGg0g
 github.com/tdewolff/minify/v2 v2.7.0/go.mod h1:BkDSm8aMMT0ALGmpt7j3Ra7nLUgZL0qhyrAHXwxcy5w=
 github.com/tdewolff/minify/v2 v2.7.2 h1:XA92QuWsrKji+TlBv03mPuzUpSWz97mE5nyISY84wEY=
 github.com/tdewolff/minify/v2 v2.7.2/go.mod h1:BkDSm8aMMT0ALGmpt7j3Ra7nLUgZL0qhyrAHXwxcy5w=
+github.com/tdewolff/minify/v2 v2.7.3 h1:ngzhF7SaunCtbsBjgm7WJzl9HdiKlA1gYC/Qyx9CVMo=
+github.com/tdewolff/minify/v2 v2.7.3/go.mod h1:BkDSm8aMMT0ALGmpt7j3Ra7nLUgZL0qhyrAHXwxcy5w=
 github.com/tdewolff/parse v2.3.4+incompatible h1:x05/cnGwIMf4ceLuDMBOdQ1qGniMoxpP46ghf0Qzh38=
 github.com/tdewolff/parse v2.3.4+incompatible/go.mod h1:8oBwCsVmUkgHO8M5iCzSIDtpzXOT0WXX9cWhz+bIzJQ=
 github.com/tdewolff/parse/v2 v2.3.14 h1:Tzam5YoUXx7gybFEfR/zcuR74PXADnrfUqYUXL+K5oA=
