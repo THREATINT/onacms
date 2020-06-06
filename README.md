@@ -65,5 +65,3 @@ docker run --name=mysite -p 10000:10000 -v /home/user/dir/:/www:ro threatint/ona
 ## License
 
 Released under the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl.HTML).
-
-Kindly contact [Team@THREATINT.com](mailto:team@threatint.com) for information on licensing for OEM / ISV.
