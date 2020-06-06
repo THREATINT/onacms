@@ -1,6 +1,6 @@
 module github.com/THREATINT/onacms
 
-go 1.12
+go 1.13
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
@@ -14,11 +14,9 @@ require (
 	github.com/cznic/b v0.0.0-20181122101859-a26611c4d92d // indirect
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
 	github.com/cznic/strutil v0.0.0-20181122101858-275e90344537 // indirect
-	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/facebookgo/ensure v0.0.0-20200202191622-63f1cf65ac4c // indirect
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4 // indirect
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/glycerine/go-unsnap-stream v0.0.0-20190901134440-81cf024a9e0a // indirect
 	github.com/golang-commonmark/html v0.0.0-20180910111043-7d7c804e1d46 // indirect
 	github.com/golang-commonmark/linkify v0.0.0-20180910111149-f05efb453a0e // indirect
@@ -35,18 +33,14 @@ require (
 	github.com/opennota/wd v0.0.0-20180911144301-b446539ab1e7 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/rs/zerolog v1.19.0
-	github.com/russross/blackfriday v2.0.0+incompatible // indirect
-	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/spf13/afero v1.2.2
 	github.com/stretchr/testify v1.6.1 // indirect
 	github.com/tdewolff/minify/v2 v2.7.4
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
 	github.com/tinylib/msgp v1.1.2 // indirect
-	github.com/zenazn/goji v0.9.0 // indirect
 	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9 // indirect
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
 	golang.org/x/sys v0.0.0-20200602225109-6fdc65e7d980 // indirect
-	golang.org/x/text v0.3.2 // indirect
 	google.golang.org/protobuf v1.24.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
