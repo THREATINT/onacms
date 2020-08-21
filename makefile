@@ -1,4 +1,4 @@
-onacms: onacms.go
+onacms: onacms.go go.mod core/*.go
 	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-s -w -extldflags "-static"'
 
 docker:onacms

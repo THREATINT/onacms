@@ -327,7 +327,7 @@ func (core *Core) populateHeaders(filename string) {
 	if err != nil {
 		s.WriteString(" - ")
 		s.WriteString(err.Error())
-		log.Error().Msg(s.String())
+		log.Warn().Msg(s.String())
 
 		return
 	}
@@ -336,7 +336,7 @@ func (core *Core) populateHeaders(filename string) {
 	if err != nil {
 		s.WriteString(" - ")
 		s.WriteString(err.Error())
-		log.Error().Msg(s.String())
+		log.Warn().Msg(s.String())
 	}
 
 	for _, uri := range core.HttpHeaders.Uri {

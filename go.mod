@@ -1,6 +1,6 @@
 module github.com/THREATINT/onacms
 
-go 1.14
+go 1.15
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
@@ -44,7 +44,6 @@ require (
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/net v0.0.0-20200813134508-3edf25e44fcc
 	golang.org/x/sys v0.0.0-20200820212457-1fb795427249 // indirect
-	golang.org/x/text v0.3.3 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
