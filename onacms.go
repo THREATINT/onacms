@@ -27,7 +27,7 @@ func main() {
 
 	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
 	output.FormatLevel = func(i interface{}) string {
-		return strings.ToUpper(fmt.Sprintf("| %-6s|", i))
+		return strings.ToUpper(fmt.Sprintf("| %-5s|", i))
 	}
 	log := zerolog.New(output).With().Timestamp().Logger()
 

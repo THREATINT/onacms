@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/RoaringBitmap/roaring v0.5.0 // indirect
+	github.com/RoaringBitmap/roaring v0.5.1 // indirect
 	github.com/THREATINT/go-crypto v0.0.0-20200103092120-6bbea8e18ad7
 	github.com/THREATINT/go-http v0.0.0-20200103092529-6f2f78df77f2
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
@@ -42,8 +42,8 @@ require (
 	github.com/willf/bitset v1.1.11 // indirect
 	go.etcd.io/bbolt v1.3.5 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
-	golang.org/x/net v0.0.0-20200813134508-3edf25e44fcc
-	golang.org/x/sys v0.0.0-20200820212457-1fb795427249 // indirect
+	golang.org/x/net v0.0.0-20200822124328-c89045814202
+	golang.org/x/sys v0.0.0-20200821140526-fda516888d29 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
