@@ -79,27 +79,27 @@ func (n *Node) Weight() int {
 	i, err := strconv.Atoi(n.xmlNode.Weight)
 	if err == nil {
 		return i
-	} else {
-		return -1
 	}
+
+	return -1
 }
 
 func (n *Node) Created() int {
 	t, err := strconv.Atoi(n.xmlNode.Created)
 	if err == nil {
 		return t
-	} else {
-		return -1
 	}
+
+	return -1
 }
 
 func (n *Node) LastModified() int {
 	t, err := strconv.Atoi(n.xmlNode.LastModified)
 	if err == nil {
 		return t
-	} else {
-		return -1
 	}
+
+	return -1
 }
 
 func (n *Node) Engine() string {
