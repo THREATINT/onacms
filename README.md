@@ -10,11 +10,11 @@ Onacms makes use of the following three concepts for a site:
 
 ## Building and dependencies
 You can either run
-```
+```sh
 go build
 ```
 for development or
-```
+```sh
 make
 ```
 for a production build that requires UNIX ```make``` and
@@ -22,7 +22,7 @@ for a production build that requires UNIX ```make``` and
 to be installed installed your local machine.
 
 ## Running
-```
+```sh
 onacms [--dir=<directory>] [--port=<TCP port>]
 ```
 *directory* is the directory containing the actual site (/nodes /templates /public).
@@ -33,12 +33,12 @@ Onacms does not log interactions with clients! Please use the frontend webserver
 
 ### Docker
 We provide a Dockerfile to use onacms in a Docker container. Please see [hub.docker.com/r/threatint/onacms](https://hub.docker.com/r/threatint/onacms):
-```
+```sh
 docker pull threatint/onacms
 ```
 
 To start the container and map a local directory read-only to /www and a local port to 10000/TCP, e.g.:
-```
+```sh
 docker run --name=mysite -p 10000:10000 -v /home/user/dir/:/www:ro threatint/onacms
 ```
 
