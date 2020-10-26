@@ -22,7 +22,6 @@ for a production build that requires UNIX ```make``` and
 [UPX](https://upx.github.io/)
 to be installed installed your local machine.
 
-
 ## Running
 ```
 onacms [--dir=<directory>] [--port=<TCP port>]
