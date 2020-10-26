@@ -9,17 +9,7 @@ Onacms makes use of the following three concepts for a site:
     - Static/public files (/public): These files are handled by onacms in the same way that you would expect from any other webserver. Use it e.g. for static files like robots.txt.
 
 ## Building and dependencies
-You can either run
-```sh
-go build
-```
-for development or
-```sh
-make
-```
-for a production build that requires UNIX ```make``` and
-[UPX](https://upx.github.io/)
-to be installed installed your local machine.
+You can either run ```go build``` for development or ```make``` for a production build that requires UNIX make and [UPX](https://upx.github.io/) to be installed installed your local machine.
 
 ## Running
 ```sh
