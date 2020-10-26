@@ -27,7 +27,6 @@ func (c *TextMinifier) Minify(m *minify.M, w io.Writer, r io.Reader, params map[
 	_, err = w.Write([]byte(s))
 	if err != nil {
 		return err
-	} else {
-		return nil
-	}
+
+	return nil
 }
