@@ -533,9 +533,6 @@ func (core *Core) populateFTIndex() {
 	for _, node := range core.Nodes {
 		if node.Enabled() {
 			ns := NewNodeSearchable(node)
-
-			//log.Debug().Msg(fmt.Sprintf("indexing node %s", node.Path()))
-
 			core.ftindex.Index(string(node.Path()), ns)
 		}
 	}

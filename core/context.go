@@ -51,7 +51,6 @@ func (context *Context) Search(term string, maxresults int) []SearchResult {
 
 	resp, err := context.FulltextIndex.Search(req)
 	if err != nil {
-		//Logger.Errorf(err.Error())
 		return r
 	}
 

@@ -1,3 +1,3 @@
 FROM scratch
-ADD onacms /
+COPY onacms /
 CMD ["/onacms"]
