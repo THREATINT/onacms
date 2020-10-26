@@ -1,7 +1,6 @@
 package main
 
 import (
-	"compress/gzip"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,12 +8,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/NYTimes/gziphandler"
-	"github.com/THREATINT/onacms/core"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/rs/zerolog"
 	"github.com/spf13/afero"
 
 	"gopkg.in/alecthomas/kingpin.v2"
+
+	"github.com/THREATINT/onacms/core"
+	"github.com/THREATINT/onacms/helpers"
 )
 
 func main() {
@@ -47,26 +49,20 @@ func main() {
 		os.Exit(0xe0)
 	}
 
-	log.Info().Msg(fmt.Sprintf("starting onacms port %d", *port))
+	router := chi.NewRouter()
 
-	defer func() {
-		if r := recover(); r != nil {
-			log.Fatal().Msg(fmt.Sprintf("%+v - exiting", r))
-			os.Exit(0xfe)
-		}
-	}()
+	router.Use(middleware.Timeout(time.Minute))
+	router.Use(middleware.StripSlashes)
+	router.Use(middleware.Compress(9, "gzip"))
 
-	server := http.NewServeMux()
+	router.Use(helpers.Recoverer(&log))
 
-	gzh, err := gziphandler.GzipHandlerWithOpts(
-		gziphandler.MinSize(100),
-		gziphandler.CompressionLevel(gzip.BestCompression))
+	router.Route("/", func(r chi.Router) {
+		r.Get("/", core.HTTP)
+	})
 
-	server.Handle("/", gzh(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		core.Http(w, r)
-	})))
-
-	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), server)
+	log.Info().Msg(fmt.Sprintf("Running on port %s.", *port))
+	err = http.ListenAndServe(fmt.Sprintf(":%s", *port), router)
 	if err != nil {
 		log.Fatal().Msg(fmt.Sprintf("%s - exiting", err.Error()))
 		os.Exit(0xfc)

@@ -95,8 +95,7 @@ type Core struct {
 	ftindex     bleve.Index
 }
 
-func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
-
+func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 	// we do not understand HTTP Range requests -> ignore
 	// see https://tools.ietf.org/html/rfc7233#section-1.1
 	// - no action needed -
@@ -120,7 +119,7 @@ func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
 	newurlpath, err := url.PathUnescape(origurlpath)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, "", 500)
+		w.WriteHeader(500)
 		return
 	}
 
