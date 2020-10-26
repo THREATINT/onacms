@@ -4,13 +4,13 @@ go 1.15
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/RoaringBitmap/roaring v0.5.1 // indirect
-	github.com/THREATINT/go-crypto v0.0.0-20200103092120-6bbea8e18ad7
+	github.com/RoaringBitmap/roaring v0.5.3 // indirect
+	github.com/THREATINT/go-crypto v0.0.0-20201026120457-93d7ad9090c9
 	github.com/THREATINT/go-http v0.0.0-20200103092529-6f2f78df77f2
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/blevesearch/bleve v1.0.12
-	github.com/bmatcuk/doublestar v1.3.2
+	github.com/bmatcuk/doublestar v1.3.3
 	github.com/couchbase/vellum v1.0.2 // indirect
 	github.com/cznic/b v0.0.0-20181122101859-a26611c4d92d // indirect
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
@@ -36,19 +36,20 @@ require (
 	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/onsi/gomega v1.10.3 // indirect
 	github.com/opennota/wd v0.0.0-20180911144301-b446539ab1e7 // indirect
+	github.com/philhofer/fwd v1.1.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/rs/zerolog v1.20.0
 	github.com/spf13/afero v1.4.1
 	github.com/stretchr/testify v1.6.1 // indirect
-	github.com/tdewolff/minify/v2 v2.9.8
+	github.com/tdewolff/minify/v2 v2.9.10
 	github.com/tdewolff/parse/v2 v2.5.5 // indirect
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
 	github.com/tinylib/msgp v1.1.2 // indirect
 	github.com/willf/bitset v1.1.11 // indirect
 	go.etcd.io/bbolt v1.3.5 // indirect
-	golang.org/x/crypto v0.0.0-20201012173705-84dcc777aaee // indirect
-	golang.org/x/net v0.0.0-20201010224723-4f7140c49acb
-	golang.org/x/sys v0.0.0-20201015000850-e3ed0017c211 // indirect
+	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
+	golang.org/x/net v0.0.0-20201026091529-146b70c837a4
+	golang.org/x/sys v0.0.0-20201026133411-418715ba6fdd // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6

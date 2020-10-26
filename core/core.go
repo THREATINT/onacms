@@ -63,7 +63,7 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 
 	log.Info().Msg("reading HTTP headers...")
 	c.populateHeaders("http-headers.xml")
-	log.Info().Msg(fmt.Sprintf("%d HTTP header(s)", len(c.HttpHeaders.Uri)))
+	log.Info().Msg(fmt.Sprintf("%d HTTP header(s)", len(c.HttpHeaders.URI)))
 
 	log.Info().Msg("reading public files...")
 	c.populatePublicFiles("public")
@@ -339,7 +339,7 @@ func (core *Core) populateHeaders(filename string) {
 		log.Warn().Msg(s.String())
 	}
 
-	for _, uri := range core.HttpHeaders.Uri {
+	for _, uri := range core.HttpHeaders.URI {
 		uri.Expression = strings.ToLower(uri.Expression)
 	}
 }
@@ -351,35 +351,32 @@ func (core *Core) populatePublicFiles(dir string) {
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return nil
-		} else {
-			path = filepath.Clean(path)
-			p := strings.TrimPrefix(path, dir)
-			p = strings.TrimPrefix(p, "/")
-			p = strings.ToLower(p)
+		}
 
-			if !info.IsDir() {
-				s.Reset()
-				s.WriteString("--")
-				s.WriteString(path)
+		path = filepath.Clean(path)
+		p := strings.TrimPrefix(path, dir)
+		p = strings.TrimPrefix(p, "/")
+		p = strings.ToLower(p)
+		if !info.IsDir() {
+			s.Reset()
+			s.WriteString("--")
+			s.WriteString(path)
 
-				file, err := afero.ReadFile(*core.fs, path)
-				if err != nil {
-					s.WriteString(" - ")
-					s.WriteString(err.Error())
-					log.Error().Msg(s.String())
-					return nil
-				}
-
-				core.PublicFiles[p] = &PublicFile{
-					Content:  file,
-					MimeType: TIhttp.MimeTypeByExtension(filepath.Ext(path)),
-				}
-
-				//log.Debug().Msg(fmt.Sprintf("reading file %s (%s)", path, core.PublicFiles[p].MimeType))
+			file, err := afero.ReadFile(*core.fs, path)
+			if err != nil {
+				s.WriteString(" - ")
+				s.WriteString(err.Error())
+				log.Error().Msg(s.String())
+				return nil
 			}
 
-			return nil
+			core.PublicFiles[p] = &PublicFile{
+				Content:  file,
+				MimeType: TIhttp.MimeTypeByExtension(filepath.Ext(path)),
+			}
 		}
+
+		return nil
 	})
 }
 

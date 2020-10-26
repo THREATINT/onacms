@@ -7,13 +7,13 @@ import (
 	"github.com/bmatcuk/doublestar"
 )
 
-type Uri struct {
+type URI struct {
 	Expression string   `xml:"expression,attr"`
 	Header     []string `xml:"header"`
 }
 
 type HTTPHeaders struct {
-	Uri []Uri `xml:"uri"`
+	URI []URI `xml:"uri"`
 }
 
 func (h *HTTPHeaders) Read(r []byte) error {
@@ -24,7 +24,7 @@ func (h *HTTPHeaders) Match(slug string) []string {
 	var result []string
 	slug = strings.ToLower(slug)
 
-	for _, uri := range h.Uri {
+	for _, uri := range h.URI {
 		m, err := doublestar.Match(uri.Expression, slug)
 		if m && err == nil {
 			for _, h := range uri.Header {
