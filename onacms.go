@@ -43,26 +43,23 @@ func main() {
 	fs := afero.NewBasePathFs(afero.NewOsFs(), *dir)
 
 	core := core.NewCore(&fs, log)
-
 	if len(core.Nodes) == 0 {
 		log.Fatal().Msg("no nodes, exiting...")
 		os.Exit(0xe0)
 	}
 
-	router := chi.NewRouter()
+	r := chi.NewRouter()
 
-	router.Use(middleware.Timeout(time.Minute))
-	router.Use(middleware.StripSlashes)
-	router.Use(middleware.Compress(9, "gzip"))
+	r.Use(middleware.Timeout(time.Minute))
+	r.Use(middleware.StripSlashes)
+	r.Use(middleware.Compress(9, "gzip"))
 
-	router.Use(helpers.Recoverer(&log))
+	r.Use(helpers.Recoverer(&log))
 
-	router.Route("/", func(r chi.Router) {
-		r.Get("/", core.HTTP)
-	})
+	r.Get("/*", core.HTTPGet)
 
-	log.Info().Msg(fmt.Sprintf("Running on port %s.", *port))
-	err = http.ListenAndServe(fmt.Sprintf(":%s", *port), router)
+	log.Info().Msg(fmt.Sprintf("Running on port %v.", *port))
+	err = http.ListenAndServe(fmt.Sprintf(":%v", *port), r)
 	if err != nil {
 		log.Fatal().Msg(fmt.Sprintf("%s - exiting", err.Error()))
 		os.Exit(0xfc)

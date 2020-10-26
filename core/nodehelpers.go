@@ -83,10 +83,15 @@ RootNodes (nodes)
 Return all nodes at the root (=top level) of the hierarchie
 */
 func RootNodes(nodes []*Node) []*Node {
-	if nodes != nil && len(nodes) > 0 {
-		return SiblingsAndSelf(nodes[0].Root(), nodes)
+	var rootNodes []*Node
+
+	for _, n := range nodes {
+		if n.Parent() == nil {
+			rootNodes = append(rootNodes, n)
+		}
 	}
-	return nil
+
+	return rootNodes
 }
 
 /*
@@ -98,13 +103,5 @@ func SiblingsAndSelf(node *Node, nodes []*Node) []*Node {
 		return node.Parent().Children()
 	}
 
-	var rootNodes []*Node
-
-	for _, n := range nodes {
-		if n.Parent() == nil {
-			rootNodes = append(rootNodes, n)
-		}
-	}
-
-	return rootNodes
+	return RootNodes(nodes)
 }

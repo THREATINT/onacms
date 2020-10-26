@@ -46,7 +46,7 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 		c.ftindex = ftindex
 	}
 
-	c.HTTPHeaders = &HTTPHeaders{}
+	c.HttpHeaders = &HTTPHeaders{}
 
 	c.PublicFiles = make(map[string]*PublicFile)
 
@@ -63,7 +63,7 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 
 	log.Info().Msg("reading HTTP headers...")
 	c.populateHeaders("http-headers.xml")
-	log.Info().Msg(fmt.Sprintf("%d HTTP header(s)", len(c.HTTPHeaders.URI)))
+	log.Info().Msg(fmt.Sprintf("%d HTTP header(s)", len(c.HttpHeaders.URI)))
 
 	log.Info().Msg("reading public files...")
 	c.populatePublicFiles("public")
@@ -89,13 +89,14 @@ type Core struct {
 	Nodes       []*Node
 	PublicFiles map[string]*PublicFile
 	Templates   map[string]*Template
-	HTTPHeaders *HTTPHeaders
+	HttpHeaders *HTTPHeaders
 	fs          *afero.Fs
 	minifier    *minify.M
 	ftindex     bleve.Index
 }
 
-func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
+func (core *Core) HTTPGet(w http.ResponseWriter, r *http.Request) {
+
 	// we do not understand HTTP Range requests -> ignore
 	// see https://tools.ietf.org/html/rfc7233#section-1.1
 	// - no action needed -
@@ -119,16 +120,14 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 	newurlpath, err := url.PathUnescape(origurlpath)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		w.WriteHeader(500)
+		http.Error(w, "", 500)
 		return
 	}
 
-	bm := bluemonday.StrictPolicy()
-
-	newurlpath = bm.Sanitize(newurlpath)
+	newurlpath = bluemonday.StrictPolicy().Sanitize(newurlpath)
 
 	if newurlpath != origurlpath {
-		log.Warn().Msg(fmt.Sprintf("Possible XSS: '%s' (sansitised to '%s')", origurlpath, newurlpath))
+		log.Warn().Msg(fmt.Sprintf("Possible XSS: '%s', sansitised to '%s'", origurlpath, newurlpath))
 		http.Redirect(w, r, string(newurlpath), 303)
 		return
 	}
@@ -282,7 +281,7 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 		// Minify the content
 		page, err := core.minifier.String(t.MimeType(), string(context.Content))
 		if err != nil {
-			// If it goes wrong for any reason, we leave the original content untouched and continue
+			// If minifying goes wrong for any reason, we leave the original content untouched and continue
 			page = string(context.Content)
 			log.Warn().Msg(err.Error())
 		}
@@ -308,7 +307,7 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// set HTTP headers based on URI
-	for _, h := range core.HTTPHeaders.Match(urlpath) {
+	for _, h := range core.HttpHeaders.Match(urlpath) {
 		r := strings.SplitN(h, ":", 2)
 		w.Header().Add(strings.TrimSpace(r[0]), strings.TrimSpace(r[1]))
 	}
@@ -331,14 +330,14 @@ func (core *Core) populateHeaders(filename string) {
 		return
 	}
 
-	err = core.HTTPHeaders.Read(file)
+	err = core.HttpHeaders.Read(file)
 	if err != nil {
 		s.WriteString(" - ")
 		s.WriteString(err.Error())
 		log.Warn().Msg(s.String())
 	}
 
-	for _, uri := range core.HTTPHeaders.URI {
+	for _, uri := range core.HttpHeaders.URI {
 		uri.Expression = strings.ToLower(uri.Expression)
 	}
 }
@@ -350,51 +349,11 @@ func (core *Core) populatePublicFiles(dir string) {
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return nil
-		}
-
-		path = filepath.Clean(path)
-		p := strings.TrimPrefix(path, dir)
-		p = strings.TrimPrefix(p, "/")
-		p = strings.ToLower(p)
-		if !info.IsDir() {
-			s.Reset()
-			s.WriteString("--")
-			s.WriteString(path)
-
-			file, err := afero.ReadFile(*core.fs, path)
-			if err != nil {
-				s.WriteString(" - ")
-				s.WriteString(err.Error())
-				log.Error().Msg(s.String())
-				return nil
-			}
-
-			core.PublicFiles[p] = &PublicFile{
-				Content:  file,
-				MimeType: TIhttp.MimeTypeByExtension(filepath.Ext(path)),
-			}
-		}
-
-		return nil
-	})
-}
-
-func (core *Core) populateTemplates(dir string) {
-	var s bytes.Buffer
-
-	afero.Walk(*core.fs, dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return nil
-		}
-
-		path = filepath.Clean(path)
-		p := strings.TrimPrefix(path, dir)
-		p = strings.TrimPrefix(p, "/")
-		p = strings.ToLower(p)
-
-		if strings.HasSuffix(p, ".xml") {
-			p = strings.TrimSuffix(p, ".xml")
+		} else {
+			path = filepath.Clean(path)
+			p := strings.TrimPrefix(path, dir)
+			p = strings.TrimPrefix(p, "/")
+			p = strings.ToLower(p)
 
 			if !info.IsDir() {
 				s.Reset()
@@ -409,48 +368,87 @@ func (core *Core) populateTemplates(dir string) {
 					return nil
 				}
 
-				var templ Template
-				err = templ.Read(file)
-				if err != nil {
-					s.WriteString(" - ")
-					s.WriteString(err.Error())
-					log.Error().Msg(s.String())
-					return nil
+				core.PublicFiles[p] = &PublicFile{
+					Content:  file,
+					MimeType: TIhttp.MimeTypeByExtension(filepath.Ext(path)),
 				}
-				templ.name = p
+			}
 
-				if templ.ContentFile() != "" {
-					file, err = afero.ReadFile(*core.fs, filepath.Join(filepath.Dir(path), templ.ContentFile()))
+			return nil
+		}
+	})
+}
+
+func (core *Core) populateTemplates(dir string) {
+	var s bytes.Buffer
+
+	afero.Walk(*core.fs, dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Error().Msg(err.Error())
+			return nil
+		} else {
+			path = filepath.Clean(path)
+			p := strings.TrimPrefix(path, dir)
+			p = strings.TrimPrefix(p, "/")
+			p = strings.ToLower(p)
+
+			if strings.HasSuffix(p, ".xml") {
+				p = strings.TrimSuffix(p, ".xml")
+
+				if !info.IsDir() {
+					s.Reset()
+					s.WriteString("--")
+					s.WriteString(path)
+
+					file, err := afero.ReadFile(*core.fs, path)
 					if err != nil {
 						s.WriteString(" - ")
 						s.WriteString(err.Error())
 						log.Error().Msg(s.String())
 						return nil
-					} else {
+					}
+
+					var templ Template
+					err = templ.Read(file)
+					if err != nil {
+						s.WriteString(" - ")
+						s.WriteString(err.Error())
+						log.Error().Msg(s.String())
+						return nil
+					}
+					templ.name = p
+
+					if templ.ContentFile() != "" {
+						file, err = afero.ReadFile(*core.fs, filepath.Join(filepath.Dir(path), templ.ContentFile()))
+						if err != nil {
+							s.WriteString(" - ")
+							s.WriteString(err.Error())
+							log.Error().Msg(s.String())
+							return nil
+						}
+
 						s.WriteString(" (using ")
 						s.WriteString(templ.ContentFile())
 						s.WriteString(") ")
 
 						templ.SetContent(string(file))
 					}
+
+					gt := template.New(p)
+					gt, err = gt.Parse(templ.Content())
+					if err != nil {
+						s.WriteString(" - ")
+						s.WriteString(err.Error())
+						log.Error().Msg(s.String())
+						return nil
+					}
+
+					core.Templates[p] = &templ
 				}
-
-				gt := template.New(p)
-				gt, err = gt.Parse(templ.Content())
-				if err != nil {
-					s.WriteString(" - ")
-					s.WriteString(err.Error())
-					log.Error().Msg(s.String())
-					return nil
-				}
-
-				//log.Debug().Msg(fmt.Sprintf("reading template %s", templ.Name))
-
-				core.Templates[p] = &templ
 			}
-		}
 
-		return nil
+			return nil
+		}
 	})
 }
 
@@ -529,6 +527,9 @@ func (core *Core) populateFTIndex() {
 	for _, node := range core.Nodes {
 		if node.Enabled() {
 			ns := NewNodeSearchable(node)
+
+			//log.Debug().Msg(fmt.Sprintf("indexing node %s", node.Path()))
+
 			core.ftindex.Index(string(node.Path()), ns)
 		}
 	}
