@@ -46,7 +46,7 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 		c.ftindex = ftindex
 	}
 
-	c.HttpHeaders = &HTTPHeaders{}
+	c.HTTPHeaders = &HTTPHeaders{}
 
 	c.PublicFiles = make(map[string]*PublicFile)
 
@@ -63,7 +63,7 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 
 	log.Info().Msg("reading HTTP headers...")
 	c.populateHeaders("http-headers.xml")
-	log.Info().Msg(fmt.Sprintf("%d HTTP header(s)", len(c.HttpHeaders.URI)))
+	log.Info().Msg(fmt.Sprintf("%d HTTP header(s)", len(c.HTTPHeaders.URI)))
 
 	log.Info().Msg("reading public files...")
 	c.populatePublicFiles("public")
@@ -89,7 +89,7 @@ type Core struct {
 	Nodes       []*Node
 	PublicFiles map[string]*PublicFile
 	Templates   map[string]*Template
-	HttpHeaders *HTTPHeaders
+	HTTPHeaders *HTTPHeaders
 	fs          *afero.Fs
 	minifier    *minify.M
 	ftindex     bleve.Index
@@ -307,7 +307,7 @@ func (core *Core) HTTPGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// set HTTP headers based on URI
-	for _, h := range core.HttpHeaders.Match(urlpath) {
+	for _, h := range core.HTTPHeaders.Match(urlpath) {
 		r := strings.SplitN(h, ":", 2)
 		w.Header().Add(strings.TrimSpace(r[0]), strings.TrimSpace(r[1]))
 	}
@@ -330,14 +330,14 @@ func (core *Core) populateHeaders(filename string) {
 		return
 	}
 
-	err = core.HttpHeaders.Read(file)
+	err = core.HTTPHeaders.Read(file)
 	if err != nil {
 		s.WriteString(" - ")
 		s.WriteString(err.Error())
 		log.Warn().Msg(s.String())
 	}
 
-	for _, uri := range core.HttpHeaders.URI {
+	for _, uri := range core.HTTPHeaders.URI {
 		uri.Expression = strings.ToLower(uri.Expression)
 	}
 }
