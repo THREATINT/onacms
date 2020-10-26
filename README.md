@@ -24,12 +24,12 @@ Onacms does not log interactions with clients! Please use the frontend webserver
 ### Docker
 We provide a Dockerfile to use onacms in a Docker container. Please see [hub.docker.com/r/threatint/onacms](https://hub.docker.com/r/threatint/onacms):
 ```sh
-docker pull threatint/onacms
+    docker pull threatint/onacms
 ```
 
 To start the container and map a local directory read-only to /www and a local port to 10000/TCP, e.g.:
-```sh
-docker run --name=mysite -p 10000:10000 -v /home/user/dir/:/www:ro threatint/onacms
+```
+    docker run --name=mysite -p 10000:10000 -v /home/user/dir/:/www:ro threatint/onacms
 ```
 
 ## License
