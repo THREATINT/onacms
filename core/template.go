@@ -50,9 +50,9 @@ func (t *Template) LastModified() (int, error) {
 func (t *Template) Engine() string {
 	if strings.TrimSpace(t.xmlTemplate.Engine) == "" {
 		return ""
-	} else {
-		return strings.ToLower(t.xmlTemplate.Engine)
 	}
+
+	return strings.ToLower(t.xmlTemplate.Engine)
 }
 
 func (t *Template) MimeType() string {
