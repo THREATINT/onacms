@@ -390,71 +390,71 @@ func (core *Core) populateTemplates(dir string) {
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return nil
-		} else {
-			path = filepath.Clean(path)
-			p := strings.TrimPrefix(path, dir)
-			p = strings.TrimPrefix(p, "/")
-			p = strings.ToLower(p)
-
-			if strings.HasSuffix(p, ".xml") {
-				p = strings.TrimSuffix(p, ".xml")
-
-				if !info.IsDir() {
-					s.Reset()
-					s.WriteString("--")
-					s.WriteString(path)
-
-					file, err := afero.ReadFile(*core.fs, path)
-					if err != nil {
-						s.WriteString(" - ")
-						s.WriteString(err.Error())
-						log.Error().Msg(s.String())
-						return nil
-					}
-
-					var templ Template
-					err = templ.Read(file)
-					if err != nil {
-						s.WriteString(" - ")
-						s.WriteString(err.Error())
-						log.Error().Msg(s.String())
-						return nil
-					}
-					templ.name = p
-
-					if templ.ContentFile() != "" {
-						file, err = afero.ReadFile(*core.fs, filepath.Join(filepath.Dir(path), templ.ContentFile()))
-						if err != nil {
-							s.WriteString(" - ")
-							s.WriteString(err.Error())
-							log.Error().Msg(s.String())
-							return nil
-						} else {
-							s.WriteString(" (using ")
-							s.WriteString(templ.ContentFile())
-							s.WriteString(") ")
-
-							templ.SetContent(string(file))
-						}
-					}
-
-					gt := template.New(p)
-					gt, err = gt.Parse(templ.Content())
-					if err != nil {
-						s.WriteString(" - ")
-						s.WriteString(err.Error())
-						log.Error().Msg(s.String())
-						return nil
-					}
-
-					//log.Debug().Msg(fmt.Sprintf("reading template %s", templ.Name))
-
-					core.Templates[p] = &templ
-				}
-			}
-
-			return nil
 		}
+
+		path = filepath.Clean(path)
+		p := strings.TrimPrefix(path, dir)
+		p = strings.TrimPrefix(p, "/")
+		p = strings.ToLower(p)
+
+		if strings.HasSuffix(p, ".xml") {
+			p = strings.TrimSuffix(p, ".xml")
+
+			if !info.IsDir() {
+				s.Reset()
+				s.WriteString("--")
+				s.WriteString(path)
+
+				file, err := afero.ReadFile(*core.fs, path)
+				if err != nil {
+					s.WriteString(" - ")
+					s.WriteString(err.Error())
+					log.Error().Msg(s.String())
+					return nil
+				}
+
+				var templ Template
+				err = templ.Read(file)
+				if err != nil {
+					s.WriteString(" - ")
+					s.WriteString(err.Error())
+					log.Error().Msg(s.String())
+					return nil
+				}
+				templ.name = p
+
+				if templ.ContentFile() != "" {
+					file, err = afero.ReadFile(*core.fs, filepath.Join(filepath.Dir(path), templ.ContentFile()))
+					if err != nil {
+						s.WriteString(" - ")
+						s.WriteString(err.Error())
+						log.Error().Msg(s.String())
+						return nil
+					} else {
+						s.WriteString(" (using ")
+						s.WriteString(templ.ContentFile())
+						s.WriteString(") ")
+
+						templ.SetContent(string(file))
+					}
+				}
+
+				gt := template.New(p)
+				gt, err = gt.Parse(templ.Content())
+				if err != nil {
+					s.WriteString(" - ")
+					s.WriteString(err.Error())
+					log.Error().Msg(s.String())
+					return nil
+				}
+
+				//log.Debug().Msg(fmt.Sprintf("reading template %s", templ.Name))
+
+				core.Templates[p] = &templ
+			}
+		}
+
+		return nil
 	})
 }
 
