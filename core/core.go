@@ -349,33 +349,33 @@ func (core *Core) populatePublicFiles(dir string) {
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return nil
-		} else {
-			path = filepath.Clean(path)
-			p := strings.TrimPrefix(path, dir)
-			p = strings.TrimPrefix(p, "/")
-			p = strings.ToLower(p)
+		}
 
-			if !info.IsDir() {
-				s.Reset()
-				s.WriteString("--")
-				s.WriteString(path)
+		path = filepath.Clean(path)
+		p := strings.TrimPrefix(path, dir)
+		p = strings.TrimPrefix(p, "/")
+		p = strings.ToLower(p)
 
-				file, err := afero.ReadFile(*core.fs, path)
-				if err != nil {
-					s.WriteString(" - ")
-					s.WriteString(err.Error())
-					log.Error().Msg(s.String())
-					return nil
-				}
+		if !info.IsDir() {
+			s.Reset()
+			s.WriteString("--")
+			s.WriteString(path)
 
-				core.PublicFiles[p] = &PublicFile{
-					Content:  file,
-					MimeType: TIhttp.MimeTypeByExtension(filepath.Ext(path)),
-				}
+			file, err := afero.ReadFile(*core.fs, path)
+			if err != nil {
+				s.WriteString(" - ")
+				s.WriteString(err.Error())
+				log.Error().Msg(s.String())
+				return nil
 			}
 
-			return nil
+			core.PublicFiles[p] = &PublicFile{
+				Content:  file,
+				MimeType: TIhttp.MimeTypeByExtension(filepath.Ext(path)),
+			}
 		}
+
+		return nil
 	})
 }
 
