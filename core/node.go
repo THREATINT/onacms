@@ -49,7 +49,6 @@ func (n *Node) Read(r []byte, name string) error {
 }
 
 func (n *Node) Name() string {
-
 	return n.name
 }
 
@@ -198,9 +197,9 @@ func (n *Node) Root() *Node {
 func (n *Node) HasChildren() bool {
 	if len(n.Children()) == 0 {
 		return false
-	} else {
-		return true
 	}
+
+	return true
 }
 
 func (n *Node) Children() []*Node {
@@ -240,11 +239,8 @@ func (n *Node) ApplicationEndpoint() bool {
 	appep := strings.ToLower(strings.TrimSpace(n.xmlNode.ApplicationEndpoint))
 
 	if appep == "1" || appep == "on" || strings.HasPrefix(appep, "enable") || appep == "true" {
-
 		return true
-
-	} else {
-
-		return false
 	}
+
+	return false
 }
