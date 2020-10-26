@@ -7,7 +7,7 @@ Although Onacms knows about outputing content, minification, and ETags, it heavi
 Onacms makes use of the following three concepts for a site:
 - Nodes (aka: pages) (/nodes): This is where your content goes. Content can be plain HTML or Markdown.
 - Templates (/templates): Templates take the content from nodes and generate the actual output, e.g. HTML pages for a website, sitemap.xml, etc. Templates can be written in the builtin Golang HTML templating engine.
-- Static/public files (/public): These files are handled by onacms in the same way that you would expect from any other webserver. Use it e.g. for  static files like robots.txt.
+- Static/public files (/public): These files are handled by onacms in the same way that you would expect from any other webserver. Use it e.g. for static files like robots.txt.
 
 ## Building and dependencies
 You can either run
