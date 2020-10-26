@@ -1,6 +1,5 @@
 # onacms
 Onacms (aka: "Oh No! Another Content Management System!") is not a full featured content management system, but a content management engine written in Go (Golang). It is considered to be *really* fast for it deliveres all content from memory.
-
 Although Onacms knows about outputing content, minification, and ETags, it heavily relies on a webserver like NGINX or Apache Httpd as a frontend for most other stuff, e.g. logging or TLS (transport layer security)
 
 ## Getting started
@@ -45,3 +44,5 @@ docker run --name=mysite -p 10000:10000 -v /home/user/dir/:/www:ro threatint/ona
 
 ## License
 Released under the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl.HTML).
+
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a212426d62224234b8ed6d5ab6849382)](https://www.codacy.com/gh/THREATINT/onacms/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=THREATINT/onacms&amp;utm_campaign=Badge_Grade)
