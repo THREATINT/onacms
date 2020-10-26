@@ -37,17 +37,16 @@ func FindApplicationEndpointNode(path string, nodes []*Node) *Node {
 	i := strings.LastIndex(path, "/")
 	if i <= 0 {
 		return nil
-	} else {
-		path = path[0:i]
-
-		for _, node := range nodes {
-			if string(node.Path()) == path && node.Enabled() && node.ApplicationEndpoint() {
-				return node
-			}
-		}
-
-		return FindApplicationEndpointNode(path, nodes)
 	}
+	path = path[0:i]
+
+	for _, node := range nodes {
+		if string(node.Path()) == path && node.Enabled() && node.ApplicationEndpoint() {
+			return node
+		}
+	}
+
+	return FindApplicationEndpointNode(path, nodes)
 }
 
 /**
