@@ -12,9 +12,7 @@ Onacms makes use of the following three concepts for a site:
 You can either run ```go build``` for development or ```make``` for a production build that requires UNIX make and [UPX](https://upx.github.io/) to be installed installed your local machine.
 
 ## Running
-```sh
-onacms [--dir=<directory>] [--port=<TCP port>]
-```
+```onacms [--dir=<directory>] [--port=<TCP port>]```
 *directory* is the directory containing the actual site (/nodes /templates /public).
 
 *TCP port* is the TCP port the daemon listens on. It defaults to 10000.
