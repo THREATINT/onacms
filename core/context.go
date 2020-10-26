@@ -9,7 +9,7 @@ import (
 )
 
 type Context struct {
-	HttpRequest   *http.Request
+	HTTPRequest   *http.Request
 	Node          *Node
 	Content       string
 	PublicFiles   map[string]*PublicFile

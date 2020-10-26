@@ -89,13 +89,13 @@ type Core struct {
 	Nodes       []*Node
 	PublicFiles map[string]*PublicFile
 	Templates   map[string]*Template
-	HttpHeaders *HTTPHeaders
+	HTTPHeaders *HTTPHeaders
 	fs          *afero.Fs
 	minifier    *minify.M
 	ftindex     bleve.Index
 }
 
-func (core *Core) Http(w http.ResponseWriter, r *http.Request) {
+func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 
 	// we do not understand HTTP Range requests -> ignore
 	// see https://tools.ietf.org/html/rfc7233#section-1.1
