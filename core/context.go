@@ -8,6 +8,7 @@ import (
 	"github.com/blevesearch/bleve"
 )
 
+// Context struct
 type Context struct {
 	HTTPRequest   *http.Request
 	Node          *Node
@@ -17,25 +18,17 @@ type Context struct {
 	FulltextIndex bleve.Index
 }
 
+// FindByPath find node by path
 func (context *Context) FindByPath(path string) *Node {
 	return FindNode(path, context.AllNodes)
 }
 
+// RootNodes return all root nodes
 func (context *Context) RootNodes() []*Node {
 	return RootNodes(context.AllNodes)
 }
 
-func (context *Context) InjectIntoPage(path string) string {
-	path = strings.ToLower(strings.TrimPrefix(path, "/"))
-
-	c := context.PublicFiles[path]
-	if c != nil {
-		return string(c.Content)
-	}
-
-	return ""
-}
-
+// Search search all nodes
 func (context *Context) Search(term string, maxresults int) []SearchResult {
 	term = strings.Replace(term, "*", " ", -1)
 	term = strings.Replace(term, "?", " ", -1)

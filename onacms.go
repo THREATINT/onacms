@@ -21,10 +21,10 @@ import (
 
 func main() {
 	var (
-		dir  = kingpin.Arg("dir", "directory containing the site (/public /nodes /templates)").Default("/www").String()
-		port = kingpin.Arg("port", "(optional) TCP port").Default("10000").Int16()
+		dir  = kingpin.Flag("dir", "directory containing the site (/public /nodes /templates)").Default("/www").String()
+		port = kingpin.Flag("port", "(optional) TCP port").Default("10000").Int16()
 
-		logtimestamps = kingpin.Flag("log-timestamps (e.g. not required when using syslog", "log timestamps").Bool()
+		logtimestamps = kingpin.Flag("include timestamps in logging , not required e.g. when using syslog)", "log timestamps").Bool()
 	)
 
 	kingpin.Parse()
