@@ -30,6 +30,7 @@ import (
 
 var log zerolog.Logger
 
+// NewCore Initialiser for new onacms core engine
 func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 
 	log = logger
@@ -85,6 +86,7 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 	return c
 }
 
+// Core struct for onacms core engine
 type Core struct {
 	Nodes       []*Node
 	PublicFiles map[string]*PublicFile
@@ -95,7 +97,8 @@ type Core struct {
 	ftindex     bleve.Index
 }
 
-func (core *Core) HTTPGet(w http.ResponseWriter, r *http.Request) {
+// HTTP ...
+func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 
 	// we do not understand HTTP Range requests -> ignore
 	// see https://tools.ietf.org/html/rfc7233#section-1.1

@@ -21,15 +21,25 @@ import (
 
 func main() {
 	var (
-		dir  = kingpin.Flag("dir", "directory containing the site (/public /nodes /templates)").Default("/www").String()
-		port = kingpin.Flag("port", "(optional) TCP port").Default("10000").Int16()
+		dir  = kingpin.Arg("dir", "directory containing the site (/public /nodes /templates)").Default("/www").String()
+		port = kingpin.Arg("port", "(optional) TCP port").Default("10000").Int16()
+
+		logtimestamps = kingpin.Flag("log-timestamps (e.g. not required when using syslog", "log timestamps").Bool()
 	)
 
 	kingpin.Parse()
 
-	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+	var output zerolog.ConsoleWriter
+	if *logtimestamps {
+		output = zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+	} else {
+		output = zerolog.ConsoleWriter{Out: os.Stdout}
+		output.FormatTimestamp = func(i interface{}) string {
+			return ""
+		}
+	}
 	output.FormatLevel = func(i interface{}) string {
-		return strings.ToUpper(fmt.Sprintf("| %-5s|", i))
+		return strings.ToUpper(fmt.Sprintf("| %-6s|", i))
 	}
 	log := zerolog.New(output).With().Timestamp().Logger()
 
@@ -56,7 +66,7 @@ func main() {
 
 	r.Use(helpers.Recoverer(&log))
 
-	r.Get("/*", core.HTTPGet)
+	r.Get("/*", core.HTTP)
 
 	log.Info().Msg(fmt.Sprintf("Running on port %v.", *port))
 	err = http.ListenAndServe(fmt.Sprintf(":%v", *port), r)
