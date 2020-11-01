@@ -6,10 +6,12 @@ import (
 	"golang.org/x/net/html"
 )
 
+// NodeSearchable struct
 type NodeSearchable struct {
 	Content string
 }
 
+// SearchResult struct
 type SearchResult struct {
 	Index   int
 	URL     string
@@ -17,6 +19,7 @@ type SearchResult struct {
 	Content string
 }
 
+// NewNodeSearchable initialiser
 func NewNodeSearchable(node *Node) *NodeSearchable {
 	nodeSearchable := &NodeSearchable{}
 

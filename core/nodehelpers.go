@@ -21,7 +21,10 @@ func FindNode(path string, nodes []*Node) *Node {
 	return nil
 }
 
-// FindApplicationEndpointNodesssSearch for the best match for a given path (right to left) where application-endpoint is set as property of that node, return nil if there is none.
+/*
+FindApplicationEndpointNode search for the best match for a given path (right to left)
+where application-endpoint is set as property of that node, return nil if there is none.
+*/
 func FindApplicationEndpointNode(path string, nodes []*Node) *Node {
 	path = strings.TrimSpace(strings.ToLower(path))
 
