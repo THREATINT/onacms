@@ -4,10 +4,7 @@ import (
 	"strings"
 )
 
-/*
-FindNode (path ,nodes)
-Searches for an exact match for path in the array of nodes, return nil if there is none.
-*/
+// FindNode searches for an exact match for path in the array of nodes, return nil if there is none.
 func FindNode(path string, nodes []*Node) *Node {
 	path = strings.TrimSpace(strings.ToLower(path))
 
@@ -24,11 +21,7 @@ func FindNode(path string, nodes []*Node) *Node {
 	return nil
 }
 
-/*
-FindApplicationEndpointNode (path, nodes)
-Search for the best match for a given path (right to left) where application-endpoint is set as property of
-that node, return nil if there is none.
-*/
+// FindApplicationEndpointNodesssSearch for the best match for a given path (right to left) where application-endpoint is set as property of that node, return nil if there is none.
 func FindApplicationEndpointNode(path string, nodes []*Node) *Node {
 	path = strings.TrimSpace(strings.ToLower(path))
 
@@ -51,10 +44,7 @@ func FindApplicationEndpointNode(path string, nodes []*Node) *Node {
 	return FindApplicationEndpointNode(path, nodes)
 }
 
-/*
-FindFallbackNode (path, nodes)
-Search for the best match for a given path (right to left), return nil if there is none.
-*/
+// FindFallbackNode search for the best match for a given path (right to left), return nil if there is none.
 func FindFallbackNode(path string, nodes []*Node) *Node {
 	path = strings.TrimSpace(strings.ToLower(path))
 
@@ -78,10 +68,7 @@ func FindFallbackNode(path string, nodes []*Node) *Node {
 	return FindFallbackNode(path, nodes)
 }
 
-/*
-RootNodes (nodes)
-Return all nodes at the root (=top level) of the hierarchie
-*/
+// RootNodes return all nodes at the root (=top level) of the hierarchie
 func RootNodes(nodes []*Node) []*Node {
 	var rootNodes []*Node
 
@@ -94,10 +81,7 @@ func RootNodes(nodes []*Node) []*Node {
 	return rootNodes
 }
 
-/*
-SiblingsAndSelf (node, nodes)
-Return all nodes at the same hierarchie including own node
-*/
+// SiblingsAndSelf return all nodes at the same hierarchie including own node
 func SiblingsAndSelf(node *Node, nodes []*Node) []*Node {
 	if node.Parent() != nil {
 		return node.Parent().Children()
