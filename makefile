@@ -8,3 +8,6 @@ docker:onacms
 
 docker-deploy:docker
 	docker push threatint/onacms
+
+clean:
+	rm -rf onacms onacms.upx
