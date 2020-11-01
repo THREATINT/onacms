@@ -207,6 +207,7 @@ func (n *Node) ParentsAndSelf() []*Node {
 	return append(n.Parents(), n)
 }
 
+// Root return root node
 func (n *Node) Root() *Node {
 	node := n
 
@@ -217,6 +218,7 @@ func (n *Node) Root() *Node {
 	return node
 }
 
+// HasChildren return if node has child nodes
 func (n *Node) HasChildren() bool {
 	if len(n.Children()) == 0 {
 		return false
@@ -225,10 +227,12 @@ func (n *Node) HasChildren() bool {
 	return true
 }
 
+// Children return child nodes
 func (n *Node) Children() []*Node {
 	return n.children
 }
 
+// CustomProperty return custom property
 func (n *Node) CustomProperty(key string, parent bool) string {
 	for _, p := range n.xmlNode.Property {
 		if p.Key == key {
@@ -243,6 +247,7 @@ func (n *Node) CustomProperty(key string, parent bool) string {
 	return ""
 }
 
+// Render render node content based on engine
 func (n *Node) Render() string {
 	switch n.Engine() {
 	case "markdown":
@@ -254,10 +259,12 @@ func (n *Node) Render() string {
 
 }
 
+// RedirectTo return RedirectTo from: 'redirect-to')
 func (n *Node) RedirectTo() string {
 	return strings.TrimSpace(n.xmlNode.RedirectTo)
 }
 
+// ApplicationEndpoint return if node is an application endpoint (from: 'application-endpoint')
 func (n *Node) ApplicationEndpoint() bool {
 	appep := strings.ToLower(strings.TrimSpace(n.xmlNode.ApplicationEndpoint))
 
