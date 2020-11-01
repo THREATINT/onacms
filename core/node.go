@@ -11,12 +11,14 @@ import (
 	"github.com/golang-commonmark/markdown"
 )
 
+// XMLProperty key/value pair
 type XMLProperty struct {
 	XMLName xml.Name `xml:"property"`
 	Key     string   `xml:"key,attr"`
 	Value   string   `xml:"value,attr"`
 }
 
+// XMLNode xml representation of node
 type XMLNode struct {
 	XMLName             xml.Name      `xml:"node"`
 	Title               string        `xml:"title"`
@@ -36,6 +38,7 @@ type XMLNode struct {
 	Property            []XMLProperty `xml:"property"`
 }
 
+// Node struct
 type Node struct {
 	xmlNode  XMLNode
 	name     string
@@ -43,23 +46,28 @@ type Node struct {
 	children []*Node
 }
 
+// Read initialise/read node data from []byte
 func (n *Node) Read(r []byte, name string) error {
 	n.name = name
 	return xml.Unmarshal(r, &n.xmlNode)
 }
 
+// Name return node name (from: 'name')
 func (n *Node) Name() string {
 	return n.name
 }
 
+// Title return node title (from: 'title')
 func (n *Node) Title() string {
 	return strings.TrimSpace(n.xmlNode.Title)
 }
 
+// Slug return node slug (from: 'slug')
 func (n *Node) Slug() string {
 	return strings.ToLower(url.PathEscape(n.Name()))
 }
 
+// Path return node path (from: 'path')
 func (n *Node) Path() template.URL {
 	var s bytes.Buffer
 
@@ -74,6 +82,7 @@ func (n *Node) Path() template.URL {
 	return template.URL(s.String())
 }
 
+// Weight return node weight (from: 'weight')
 func (n *Node) Weight() int {
 	i, err := strconv.Atoi(n.xmlNode.Weight)
 	if err == nil {
@@ -83,6 +92,7 @@ func (n *Node) Weight() int {
 	return -1
 }
 
+// Created return node creation time in unix timestamp format (from: 'created')
 func (n *Node) Created() int {
 	t, err := strconv.Atoi(n.xmlNode.Created)
 	if err == nil {
@@ -92,6 +102,7 @@ func (n *Node) Created() int {
 	return -1
 }
 
+// LastModified return node last modification time time in unix timestamp format (from: 'lastmodified')
 func (n *Node) LastModified() int {
 	t, err := strconv.Atoi(n.xmlNode.LastModified)
 	if err == nil {
@@ -101,10 +112,12 @@ func (n *Node) LastModified() int {
 	return -1
 }
 
+// Engine return rendering engine (from: 'engine')
 func (n *Node) Engine() string {
 	return strings.ToLower(strings.TrimSpace(n.xmlNode.Engine))
 }
 
+// Language return node language (from: 'language')
 func (n *Node) Language() string {
 	l := strings.ToLower(strings.TrimSpace(n.xmlNode.Language))
 	if l == "" && n.Parent() != nil {
@@ -113,10 +126,12 @@ func (n *Node) Language() string {
 	return l
 }
 
+// Description return description (from: 'description')
 func (n *Node) Description() string {
 	return strings.TrimSpace(n.xmlNode.Description)
 }
 
+// Template return node template (from: 'template')
 func (n *Node) Template() string {
 	t := strings.ToLower(n.xmlNode.Template)
 	if t == "" && n.Parent() != nil {
@@ -125,6 +140,7 @@ func (n *Node) Template() string {
 	return t
 }
 
+// Navigable return if node is navigable (from: 'navigable')
 func (n *Node) Navigable() bool {
 	nav := strings.ToLower(strings.TrimSpace(n.xmlNode.Navigable))
 
@@ -139,6 +155,7 @@ func (n *Node) Navigable() bool {
 	return false
 }
 
+// Enabled return if node is enabled (from: 'enabled')
 func (n *Node) Enabled() bool {
 	enabled := strings.ToLower(strings.TrimSpace(n.xmlNode.Enabled))
 
@@ -153,22 +170,27 @@ func (n *Node) Enabled() bool {
 	return false
 }
 
+// Content return node content (from: 'content')
 func (n *Node) Content() string {
 	return n.xmlNode.Content
 }
 
+// SetContent set node content ('content')
 func (n *Node) SetContent(content string) {
 	n.xmlNode.Content = content
 }
 
+// Parent return node parent (from: 'parent')
 func (n *Node) Parent() *Node {
 	return n.parent
 }
 
+// SetParent set node parent ('parent')
 func (n *Node) SetParent(parent *Node) {
 	n.parent = parent
 }
 
+// Parents return all node parents (starting from 'parent' and going up in the hierarchie)
 func (n *Node) Parents() []*Node {
 	var parentNodes []*Node
 	for n != nil && n.Parent() != nil {
@@ -180,6 +202,7 @@ func (n *Node) Parents() []*Node {
 	return parentNodes
 }
 
+// ParentsAndSelf return all node parents and self
 func (n *Node) ParentsAndSelf() []*Node {
 	return append(n.Parents(), n)
 }
