@@ -21,7 +21,7 @@ func Minify(m *minify.M, w io.Writer, r io.Reader, params map[string]string) err
 
 // Minify (m, w, r, params)
 // see https://github.com/tdewolff/minify/blob/master/minify.go for details
-func (c *TextMinifier) Minify(m *minify.M, w io.Writer, r io.Reader, params map[string]string) error {
+func (c *TextMinifier) Minify(_ *minify.M, w io.Writer, r io.Reader, params map[string]string) error {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return err
