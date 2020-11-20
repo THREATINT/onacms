@@ -4,12 +4,12 @@ go 1.15
 
 require (
 	github.com/RoaringBitmap/roaring v0.5.5 // indirect
-	github.com/THREATINT/go-crypto v0.0.0-20201026120457-93d7ad9090c9
+	github.com/THREATINT/go-crypto v0.0.0-20201113002032-d2410f1e94e2
 	github.com/THREATINT/go-http v0.0.0-20201108134912-440372790e75
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
-	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
+	github.com/alecthomas/units v0.0.0-20201120081800-1786d5ef83d4 // indirect
 	github.com/blevesearch/bleve v1.0.12
-	github.com/bmatcuk/doublestar v1.3.3
+	github.com/bmatcuk/doublestar v1.3.4
 	github.com/cznic/b v0.0.0-20181122101859-a26611c4d92d // indirect
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
 	github.com/cznic/strutil v0.0.0-20181122101858-275e90344537 // indirect
@@ -25,7 +25,7 @@ require (
 	github.com/golang-commonmark/puny v0.0.0-20180910110745-050be392d8b8 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/golang/snappy v0.0.2 // indirect
-	github.com/google/go-cmp v0.5.2 // indirect
+	github.com/google/go-cmp v0.5.3 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
@@ -42,11 +42,11 @@ require (
 	github.com/stretchr/testify v1.6.1 // indirect
 	github.com/tdewolff/minify/v2 v2.9.10
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
-	github.com/tinylib/msgp v1.1.3 // indirect
+	github.com/tinylib/msgp v1.1.4 // indirect
 	github.com/willf/bitset v1.1.11 // indirect
-	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
+	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
-	golang.org/x/sys v0.0.0-20201109165425-215b40eba54c // indirect
+	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
 	golang.org/x/text v0.3.4 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6

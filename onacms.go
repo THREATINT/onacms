@@ -24,12 +24,12 @@ func main() {
 		dir  = kingpin.Flag("dir", "directory containing the site (/public /nodes /templates)").Default("/www").String()
 		port = kingpin.Flag("port", "(optional) TCP port").Default("10000").Int16()
 
-		logtimestamps = kingpin.Flag("include timestamps in logging , not required e.g. when using syslog)", "log timestamps").Bool()
+		logtimestamps = kingpin.Flag("log-timestamps", "include timestamps in logging , not required e.g. when using syslog)").Bool()
 	)
 
 	kingpin.Parse()
 
-	var output zerolog.ConsoleWriter
+	output := zerolog.ConsoleWriter{Out: os.Stdout}
 	if *logtimestamps {
 		output = zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
 	} else {
@@ -39,8 +39,9 @@ func main() {
 		}
 	}
 	output.FormatLevel = func(i interface{}) string {
-		return strings.ToUpper(fmt.Sprintf("| %-6s|", i))
+		return strings.ToUpper(fmt.Sprintf("%-6s|", i))
 	}
+
 	log := zerolog.New(output).With().Timestamp().Logger()
 
 	log.Info().Msg("onacms (C) THREATINT")
