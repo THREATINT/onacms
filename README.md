@@ -19,11 +19,6 @@ You can either run ```go build``` for development or ```make``` for a production
 
 Onacms does not log interactions with clients! Please use the frontend webserver to have information like Client IP address, bytes transferred, etc. logged.
 
-### Docker
-We provide a Dockerfile to use onacms in a Docker container. Please see [hub.docker.com/r/threatint/onacms](https://hub.docker.com/r/threatint/onacms): ```docker pull threatint/onacms```
-
-To start the container and map a local directory read-only to /www and a local port to 10000/TCP, e.g.: ```docker run --name=mysite -p 10000:10000 -v /home/user/dir/:/www:ro threatint/onacms```
-
 ## License
 Released under the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl.HTML).
 

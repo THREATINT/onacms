@@ -274,6 +274,7 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 			}
 
 			context.Content = buf.String()
+
 			if t.Parent() == "" {
 				break
 			}

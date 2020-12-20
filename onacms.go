@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"os"
 	"os/user"
+	"path/filepath"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -25,6 +28,8 @@ func main() {
 		port = kingpin.Flag("port", "(optional) TCP port").Default("10000").Int16()
 
 		logtimestamps = kingpin.Flag("log-timestamps", "include timestamps in logging , not required e.g. when using syslog)").Bool()
+
+		staticOutputDir = kingpin.Arg("Output", "do not start webserver, instead output site to <Output>").String()
 	)
 
 	kingpin.Parse()
@@ -53,10 +58,75 @@ func main() {
 
 	fs := afero.NewBasePathFs(afero.NewOsFs(), *dir)
 
-	core := core.NewCore(&fs, log)
-	if len(core.Nodes) == 0 {
+	c := core.NewCore(&fs, log)
+	if len(c.Nodes) == 0 {
 		log.Fatal().Msg("no nodes, exiting...")
 		os.Exit(0xe0)
+	}
+
+	if *staticOutputDir != "" {
+		for _, node := range c.Nodes {
+			if node.Enabled() {
+				p := filepath.Join(*staticOutputDir, string(node.Path()))
+
+				m := fmt.Sprintf("%s...", p)
+
+				d := filepath.Dir(p)
+
+				if d != "." && d != ".." && d != string(os.PathSeparator) {
+					if err := os.MkdirAll(d, os.ModePerm); err != nil {
+						log.Error().Msg(fmt.Sprintf("%s Mkdir: %s", m, err.Error()))
+						os.Exit(0xf2)
+					}
+				}
+
+				f, err := os.OpenFile(p, os.O_CREATE|os.O_WRONLY, os.ModePerm)
+				if err != nil {
+					log.Error().Msg(fmt.Sprintf("%s%s", m, err.Error()))
+					os.Exit(0xf1)
+				}
+				defer f.Close()
+
+				t := c.Templates[node.Template()]
+				if t == nil {
+					log.Warn().Msg(fmt.Sprintf("%s%s", m, err.Error()))
+				}
+
+				context := core.Context{
+					Content: node.Render(),
+					Node:    node,
+				}
+
+				for {
+					var buf bytes.Buffer
+					gt := template.New(t.Name())
+					gt, err = gt.Parse(t.Content())
+					if err != nil {
+						log.Error().Msg(fmt.Sprintf("%s%s", m, err.Error()))
+						break
+					}
+
+					err = gt.Execute(&buf, &context)
+					if err != nil {
+						log.Error().Msg(fmt.Sprintf("%s%s", m, err.Error()))
+						break
+					}
+
+					context.Content = buf.String()
+
+					if t.Parent() == "" {
+						break
+					}
+					t = c.Templates[t.Parent()]
+				}
+
+				f.WriteString(context.Content)
+
+				log.Info().Msg(fmt.Sprintf("%s ok", m))
+			}
+		}
+
+		os.Exit(0)
 	}
 
 	r := chi.NewRouter()
@@ -67,7 +137,7 @@ func main() {
 
 	r.Use(helpers.Recoverer(&log))
 
-	r.Get("/*", core.HTTP)
+	r.Get("/*", c.HTTP)
 
 	log.Info().Msg(fmt.Sprintf("Running on port %v.", *port))
 	err = http.ListenAndServe(fmt.Sprintf(":%v", *port), r)
