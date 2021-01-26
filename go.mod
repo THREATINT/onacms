@@ -4,8 +4,8 @@ go 1.15
 
 require (
 	github.com/RoaringBitmap/roaring v0.5.5 // indirect
-	github.com/THREATINT/go-crypto v0.0.0-20201113002032-d2410f1e94e2
-	github.com/THREATINT/go-http v0.0.0-20201108134912-440372790e75
+	github.com/THREATINT/go-crypto v0.0.0-20201227162200-22114b5ce7f0
+	github.com/THREATINT/go-http v0.0.0-20201227162041-a89833c3fe88
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20201120081800-1786d5ef83d4 // indirect
 	github.com/blevesearch/bleve v1.0.14
@@ -31,7 +31,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.4
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/nxadm/tail v1.4.5 // indirect
+	github.com/nxadm/tail v1.4.6 // indirect
 	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/onsi/gomega v1.10.4 // indirect
 	github.com/opennota/wd v0.0.0-20180911144301-b446539ab1e7 // indirect
@@ -39,19 +39,18 @@ require (
 	github.com/rs/zerolog v1.20.0
 	github.com/russross/blackfriday v1.6.0 // indirect
 	github.com/spf13/afero v1.5.1
-	github.com/stretchr/testify v1.6.1 // indirect
-	github.com/tdewolff/minify/v2 v2.9.10
-	github.com/tdewolff/parse/v2 v2.5.6 // indirect
+	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/tdewolff/minify/v2 v2.9.11
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
 	github.com/tinylib/msgp v1.1.5 // indirect
 	github.com/willf/bitset v1.1.11 // indirect
-	golang.org/x/crypto v0.0.0-20201217014255-9d1352758620 // indirect
-	golang.org/x/net v0.0.0-20201216054612-986b41b23924
-	golang.org/x/sys v0.0.0-20201218084310-7d0127a74742 // indirect
-	golang.org/x/text v0.3.4 // indirect
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
+	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
+	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
+	golang.org/x/text v0.3.5 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
