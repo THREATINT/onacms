@@ -139,6 +139,7 @@ func main() {
 	r.Get("/*", c.HTTP)
 
 	log.Info().Msg(fmt.Sprintf("Running on port %v.", *port))
-	server := &http.Server{Addr: fmt.Sprintf(":%v", *port), Handler: r, ReadTimeout: 8 * time.Second, WriteTimeout: 8 * time.Second}
+	server := &http.Server{Addr: fmt.Sprintf(":%v", *port), Handler: http.TimeoutHandler(r, 4*time.Second, ""), ReadTimeout: 2 * time.Second, WriteTimeout: 4 * time.Second}
+
 	server.ListenAndServe()
 }
