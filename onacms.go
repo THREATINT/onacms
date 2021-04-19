@@ -132,14 +132,14 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Timeout(time.Second * 10))
-	r.Use(middleware.Compress(9, "gzip"))
+	r.Use(middleware.Compress(9))
 
 	r.Use(helpers.Recoverer(&log))
 
 	r.Get("/*", c.HTTP)
 
 	log.Info().Msg(fmt.Sprintf("Running on port %v.", *port))
-	server := &http.Server{Addr: fmt.Sprintf(":%v", *port), Handler: http.TimeoutHandler(r, 4*time.Second, ""), ReadTimeout: 2 * time.Second, WriteTimeout: 4 * time.Second}
+	server := &http.Server{Addr: fmt.Sprintf(":%v", *port), Handler: http.TimeoutHandler(r, 4*time.Second, ""), ReadTimeout: time.Second * 2, WriteTimeout: time.Second * 4}
 
 	server.ListenAndServe()
 }
