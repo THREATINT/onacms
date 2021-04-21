@@ -132,6 +132,7 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Timeout(time.Second * 10))
+
 	r.Use(middleware.Compress(9))
 
 	r.Use(helpers.Recoverer(&log))
