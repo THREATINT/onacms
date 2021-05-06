@@ -3,16 +3,16 @@ all: clean deps amd64
 deps:
 	go get -u all
 
-amd64: deps
+amd64:
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -a -ldflags '-s -w -extldflags "-static"'
 
-arm64: deps
+arm64:
 	CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build -a -ldflags '-s -w -extldflags "-static"'
 
 upx:
 	upx --brute onacms
 
-docker: amd64 upx
+docker: upx
 	dos2unix Dockerfile
 	docker build -t threatint/onacms .
 
