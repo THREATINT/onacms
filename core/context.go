@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/search/query"
 )
 
 // Context struct
@@ -34,20 +35,25 @@ func (context *Context) Search(term string, maxresults int) []SearchResult {
 	term = strings.Replace(term, "?", " ", -1)
 	term = strings.TrimSpace(term)
 
-	var r []SearchResult
+	var (
+		err     error
+		q       *query.QueryStringQuery
+		req     *bleve.SearchRequest
+		result  *bleve.SearchResult
+		results []SearchResult
+	)
 
-	q := bleve.NewQueryStringQuery(term)
+	q = bleve.NewQueryStringQuery(term)
 
-	req := bleve.NewSearchRequest(q)
+	req = bleve.NewSearchRequest(q)
 	req.Highlight = bleve.NewHighlightWithStyle("html")
 	req.Fields = []string{""}
 
-	resp, err := context.FulltextIndex.Search(req)
-	if err != nil {
-		return r
+	if result, err = context.FulltextIndex.Search(req); err != nil {
+		return results
 	}
 
-	for i, m := range resp.Hits {
+	for i, m := range result.Hits {
 		if i == maxresults {
 			break
 		}
@@ -57,8 +63,8 @@ func (context *Context) Search(term string, maxresults int) []SearchResult {
 			c = fmt.Sprintf("%s<br/>%s", c, f[0])
 		}
 
-		r = append(r, SearchResult{Index: i + 1, URL: m.ID, Score: fmt.Sprintf("%.4f", m.Score), Content: c})
+		results = append(results, SearchResult{Index: i + 1, URL: m.ID, Score: fmt.Sprintf("%.4f", m.Score), Content: c})
 	}
 
-	return r
+	return results
 }

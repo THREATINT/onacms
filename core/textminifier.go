@@ -22,17 +22,13 @@ func Minify(m *minify.M, w io.Writer, r io.Reader, params map[string]string) err
 // Minify (m, w, r, params)
 // see https://github.com/tdewolff/minify/blob/master/minify.go for details
 func (c *TextMinifier) Minify(_ *minify.M, w io.Writer, r io.Reader, _ map[string]string) error {
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return err
-	}
+	var (
+		err error
+		b   []byte
+	)
 
-	rx := regexp.MustCompile(`(?m)^\s*$[\r\n]*|[\r\n]+\s+\z`)
-	s := rx.ReplaceAllString(string(b), "")
-	_, err = w.Write([]byte(s))
-	if err != nil {
-		return err
+	if b, err = ioutil.ReadAll(r); err == nil {
+		_, err = w.Write([]byte(regexp.MustCompile(`(?m)^\s*$[\r\n]*|[\r\n]+\s+\z`).ReplaceAllString(string(b), "")))
 	}
-
-	return nil
+	return err
 }

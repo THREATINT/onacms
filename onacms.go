@@ -30,6 +30,9 @@ func main() {
 		logtimestamps = kingpin.Flag("log-timestamps", "include timestamps in logging , not required e.g. when using syslog)").Bool()
 
 		staticOutputDir = kingpin.Arg("Output", "do not start webserver, instead output site to <Output>").String()
+
+		err error
+		c   *core.Core
 	)
 
 	kingpin.Parse()
@@ -51,96 +54,103 @@ func main() {
 
 	log.Info().Msg("onacms (C) THREATINT")
 
-	u, err := user.Current()
-	if err == nil && u.Username == "root" {
+	if u, err := user.Current(); err == nil && u.Username == "root" {
 		log.Warn().Msg("please do not run as root")
 	}
 
 	fs := afero.NewBasePathFs(afero.NewOsFs(), *dir)
 
-	c := core.NewCore(&fs, log)
-	if len(c.Nodes) == 0 {
+	if c = core.NewCore(&fs, log); len(c.Nodes) == 0 {
 		log.Fatal().Msg("no nodes, exiting...")
 		os.Exit(0xe0)
 	}
 
-	if *staticOutputDir != "" {
-		for _, node := range c.Nodes {
-			if node.Enabled() {
-				p := filepath.Join(*staticOutputDir, string(node.Path()))
+	// start webserver
+	if *staticOutputDir == "" {
+		r := chi.NewRouter()
+		r.Use(middleware.Timeout(time.Second * 10))
+		r.Use(middleware.Compress(9))
+		r.Use(helpers.Recoverer(&log))
+		r.Get("/*", c.HTTP)
 
-				m := fmt.Sprintf("%s...", p)
+		log.Info().Msg(fmt.Sprintf("Running on port %v.", *port))
+		server := &http.Server{Addr: fmt.Sprintf(":%v", *port), Handler: http.TimeoutHandler(r, 4*time.Second, ""), ReadTimeout: time.Second * 2, WriteTimeout: time.Second * 4}
 
-				d := filepath.Dir(p)
-
-				if d != "." && d != ".." && d != string(os.PathSeparator) {
-					if err := os.MkdirAll(d, os.ModePerm); err != nil {
-						log.Error().Msg(fmt.Sprintf("%s Mkdir: %s", m, err.Error()))
-						os.Exit(0xf2)
-					}
-				}
-
-				f, err := os.OpenFile(p, os.O_CREATE|os.O_WRONLY, os.ModePerm)
-				if err != nil {
-					log.Error().Msg(fmt.Sprintf("%s%s", m, err.Error()))
-					os.Exit(0xf1)
-				}
-				defer f.Close()
-
-				t := c.Templates[node.Template()]
-				if t == nil {
-					log.Warn().Msg(fmt.Sprintf("%s%s", m, err.Error()))
-				}
-
-				context := core.Context{
-					Content: node.Render(),
-					Node:    node,
-				}
-
-				for {
-					var buf bytes.Buffer
-					gt := template.New(t.Name())
-					gt, err = gt.Parse(t.Content())
-					if err != nil {
-						log.Error().Msg(fmt.Sprintf("%s%s", m, err.Error()))
-						break
-					}
-
-					err = gt.Execute(&buf, &context)
-					if err != nil {
-						log.Error().Msg(fmt.Sprintf("%s%s", m, err.Error()))
-						break
-					}
-
-					context.Content = buf.String()
-
-					if t.Parent() == "" {
-						break
-					}
-					t = c.Templates[t.Parent()]
-				}
-
-				f.WriteString(context.Content)
-
-				log.Info().Msg(fmt.Sprintf("%s ok", m))
-			}
+		if err = server.ListenAndServe(); err != nil {
+			log.Error().Msg(err.Error())
+			os.Exit(0xff)
 		}
 
-		os.Exit(0)
+		os.Exit(0x0)
 	}
 
-	r := chi.NewRouter()
+	// generate static content
+	for _, node := range c.Nodes {
+		var (
+			f  *os.File
+			p  string
+			m  string
+			d  string
+			gt *template.Template
+		)
 
-	r.Use(middleware.Timeout(time.Second * 10))
+		if node.Enabled() {
+			p = filepath.Join(*staticOutputDir, string(node.Path()))
 
-	r.Use(middleware.Compress(9))
+			m = fmt.Sprintf("%s...", p)
 
-	r.Use(helpers.Recoverer(&log))
+			d = filepath.Dir(p)
 
-	r.Get("/*", c.HTTP)
+			if d != "." && d != ".." && d != string(os.PathSeparator) {
+				if err := os.MkdirAll(d, os.ModePerm); err != nil {
+					log.Error().Msg(fmt.Sprintf("%s Mkdir: %s", m, err.Error()))
+					os.Exit(0xf2)
+				}
+			}
 
-	log.Info().Msg(fmt.Sprintf("Running on port %v.", *port))
-	server := &http.Server{Addr: fmt.Sprintf(":%v", *port), Handler: http.TimeoutHandler(r, 4*time.Second, ""), ReadTimeout: time.Second * 2, WriteTimeout: time.Second * 4}
+			if f, err = os.OpenFile(p, os.O_CREATE|os.O_WRONLY, os.ModePerm); err != nil {
+				log.Error().Msg(fmt.Sprintf("%s%s", m, err.Error()))
+				os.Exit(0xf1)
+			}
+			defer f.Close()
 
-	server.ListenAndServe()
+			t := c.Templates[node.Template()]
+			if t == nil {
+				log.Warn().Msg(fmt.Sprintf("%s%s", m, err.Error()))
+			}
+
+			context := &core.Context{
+				Content: node.Render(),
+				Node:    node,
+			}
+
+			for {
+				var buf bytes.Buffer
+				gt = template.New(t.Name())
+				if gt, err = gt.Parse(t.Content()); err != nil {
+					log.Error().Msg(fmt.Sprintf("%s%s", m, err.Error()))
+					break
+				}
+
+				if err = gt.Execute(&buf, context); err != nil {
+					log.Error().Msg(fmt.Sprintf("%s%s", m, err.Error()))
+					break
+				}
+
+				context.Content = buf.String()
+
+				if t.Parent() == "" {
+					break
+				}
+				t = c.Templates[t.Parent()]
+			}
+
+			if _, err = f.WriteString(context.Content); err != nil {
+				log.Error().Msg(fmt.Sprintf("%s%s", m, err.Error()))
+				os.Exit(0xf0)
+			}
+
+			log.Info().Msg(fmt.Sprintf("%s ok", m))
+		}
+	}
 }

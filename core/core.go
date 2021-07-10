@@ -347,7 +347,10 @@ func (core *Core) populateHeaders(filename string) {
 }
 
 func (core *Core) populatePublicFiles(dir string) {
-	var s bytes.Buffer
+	var (
+		s    bytes.Buffer
+		file []byte
+	)
 
 	afero.Walk(*core.fs, dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -365,8 +368,7 @@ func (core *Core) populatePublicFiles(dir string) {
 			s.WriteString("--")
 			s.WriteString(path)
 
-			file, err := afero.ReadFile(*core.fs, path)
-			if err != nil {
+			if file, err = afero.ReadFile(*core.fs, path); err != nil {
 				s.WriteString(" - ")
 				s.WriteString(err.Error())
 				log.Error().Msg(s.String())
@@ -384,7 +386,10 @@ func (core *Core) populatePublicFiles(dir string) {
 }
 
 func (core *Core) populateTemplates(dir string) {
-	var s bytes.Buffer
+	var (
+		s    bytes.Buffer
+		file []byte
+	)
 
 	afero.Walk(*core.fs, dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -405,8 +410,7 @@ func (core *Core) populateTemplates(dir string) {
 				s.WriteString("--")
 				s.WriteString(path)
 
-				file, err := afero.ReadFile(*core.fs, path)
-				if err != nil {
+				if file, err = afero.ReadFile(*core.fs, path); err != nil {
 					s.WriteString(" - ")
 					s.WriteString(err.Error())
 					log.Error().Msg(s.String())
@@ -414,8 +418,7 @@ func (core *Core) populateTemplates(dir string) {
 				}
 
 				var templ Template
-				err = templ.Read(file)
-				if err != nil {
+				if err = templ.Read(file); err != nil {
 					s.WriteString(" - ")
 					s.WriteString(err.Error())
 					log.Error().Msg(s.String())
@@ -440,8 +443,7 @@ func (core *Core) populateTemplates(dir string) {
 				}
 
 				gt := template.New(p)
-				gt, err = gt.Parse(templ.Content())
-				if err != nil {
+				if _, err = gt.Parse(templ.Content()); err != nil {
 					s.WriteString(" - ")
 					s.WriteString(err.Error())
 					log.Error().Msg(s.String())
@@ -472,41 +474,41 @@ func (core *Core) nodesFromDir(dir string) []*Node {
 		s.WriteString("--")
 		s.WriteString(err.Error())
 		log.Error().Msg(s.String())
-	} else {
-		for _, fi := range fis {
-			if !fi.IsDir() {
-				p := path.Join(dir, fi.Name())
 
-				s.Reset()
-				s.WriteString("--")
-				s.WriteString(p)
+		return nodes
+	}
 
-				file, err := afero.ReadFile(*core.fs, p)
+	for _, fi := range fis {
+		if !fi.IsDir() {
+			p := path.Join(dir, fi.Name())
+
+			s.Reset()
+			s.WriteString("--")
+			s.WriteString(p)
+
+			file, err := afero.ReadFile(*core.fs, p)
+			if err != nil {
+				s.WriteString(" - ")
+				s.WriteString(err.Error())
+				log.Error().Msg(s.String())
+			} else {
+				var node Node
+
+				p := strings.TrimPrefix(p, dir)
+				p = strings.TrimPrefix(p, "/")
+				p = strings.TrimSuffix(p, ".xml")
+
+				err = node.Read(file, p)
 				if err != nil {
 					s.WriteString(" - ")
 					s.WriteString(err.Error())
 					log.Error().Msg(s.String())
-				} else {
-					var node Node
-
-					p := strings.TrimPrefix(p, dir)
-					p = strings.TrimPrefix(p, "/")
-					p = strings.TrimSuffix(p, ".xml")
-
-					err = node.Read(file, p)
-					if err != nil {
-						s.WriteString(" - ")
-						s.WriteString(err.Error())
-						log.Error().Msg(s.String())
-						return nil
-					}
-
-					//log.Debug().Msg(fmt.Sprintf("reading node %s", node.Path()))
-
-					nodes = append(nodes, &node)
-					core.Nodes = append(core.Nodes, &node)
-					sort.Sort(NodeSorter(nodes))
+					return nil
 				}
+
+				nodes = append(nodes, &node)
+				core.Nodes = append(core.Nodes, &node)
+				sort.Sort(NodeSorter(nodes))
 			}
 		}
 	}
