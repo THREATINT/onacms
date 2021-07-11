@@ -220,11 +220,7 @@ func (n *Node) Root() *Node {
 
 // HasChildren return if node has child nodes
 func (n *Node) HasChildren() bool {
-	if len(n.Children()) == 0 {
-		return false
-	}
-
-	return true
+	return len(n.Children()) != 0
 }
 
 // Children return child nodes

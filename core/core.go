@@ -32,6 +32,10 @@ var log zerolog.Logger
 
 // NewCore Initialiser for new onacms core engine
 func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
+	var (
+		err     error
+		ftindex bleve.Index
+	)
 
 	log = logger
 
@@ -40,8 +44,7 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 	c.fs = fs
 
 	indexMapping := bleve.NewIndexMapping()
-	ftindex, err := bleve.NewMemOnly(indexMapping)
-	if err != nil {
+	if ftindex, err = bleve.NewMemOnly(indexMapping); err != nil {
 		log.Error().Msg(err.Error())
 	} else {
 		c.ftindex = ftindex
@@ -80,8 +83,11 @@ func NewCore(fs *afero.Fs, logger zerolog.Logger) *Core {
 
 	log.Info().Msg("building search index...")
 	c.populateFTIndex()
-	dc, err := c.ftindex.DocCount()
-	log.Info().Msg(fmt.Sprintf("%d node(s) in index", dc))
+	if dc, err := c.ftindex.DocCount(); err == nil {
+		log.Info().Msg(fmt.Sprintf("%d node(s) in index", dc))
+	} else {
+		log.Error().Msg(err.Error())
+	}
 
 	return c
 }
@@ -99,6 +105,14 @@ type Core struct {
 
 // HTTP ...
 func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
+	var (
+		err error
+
+		urlpath    = strings.ToLower(r.URL.String())
+		newurlpath string
+
+		content []byte
+	)
 
 	// we do not understand HTTP Range requests -> ignore
 	// see https://tools.ietf.org/html/rfc7233#section-1.1
@@ -107,51 +121,49 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 	// Allow only HTTP GET and HEAD
 	if strings.ToUpper(r.Method) != "GET" && strings.ToUpper(r.Method) != "HEAD" {
 		// neither HTTP GET nor HEAD? -> return 405 ("Method Not Allowed")
-		w.WriteHeader(405)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
-	u, err := url.Parse(strings.ToLower(r.URL.String()))
-	if err != nil {
+	if _, err = url.Parse(urlpath); err != nil {
 		// error parsing the URL? -> HTTP 400 ("Bad Request")
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// normalise + sanitise URL
-	origurlpath := strings.ToLower(r.URL.String())
-	newurlpath, err := url.PathUnescape(origurlpath)
-	if err != nil {
+	if newurlpath, err = url.PathUnescape(urlpath); err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, "", 500)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
 	newurlpath = bluemonday.StrictPolicy().Sanitize(newurlpath)
 
-	if newurlpath != origurlpath {
-		log.Warn().Msg(fmt.Sprintf("Possible XSS: '%s', sansitised to '%s'", origurlpath, newurlpath))
-		http.Redirect(w, r, string(newurlpath), 303)
-		return
+	// some browsers allow \ or %5c in URLs. BlueMonday encodes %5c back to \, but:
+	// for we a using relative paths for forwards, a request with path /\www.evil-host.com
+	// would redirect to www.evil-host.com because some browsers treat \ as /, so /\ becomes //
+	// which is treated as an absolute path!
+	// quick fix: replace all /\ with /
+	newurlpath = strings.ReplaceAll(newurlpath, "/\\", "/")
+
+	// if suffix '/' is present, remove to avoid "duplicate content" problem with search engines
+	for strings.HasSuffix(newurlpath, "/") {
+		newurlpath = strings.TrimSuffix(newurlpath, "/")
 	}
 
-	// further normalisation:
-	// if suffix '/' is present, redirect to url without suffix
-	// to avoid "duplicate content" problem with search engines
-	urlpath := strings.TrimSuffix(u.Path, "/")
-	if u.Path != urlpath && urlpath != "" {
-		http.Redirect(w, r, string(urlpath), 303)
+	// path is different from original path after cleanup + sanitising -> redirect to new (clean) path
+	if newurlpath != urlpath {
+		log.Warn().Msg(fmt.Sprintf("'%s', sanitised to '%s'", urlpath, newurlpath))
+		http.Redirect(w, r, newurlpath, http.StatusSeeOther)
 		return
 	}
 
 	// remove leading slash ("/")
 	urlpath = strings.TrimPrefix(urlpath, "/")
 
-	var content []byte
-
 	// we start by searching the static content:
-	f := core.PublicFiles[urlpath]
-	if f != nil {
+	if f := core.PublicFiles[urlpath]; f != nil {
 		etag := crypto.RIPEMD160(string(f.Content[:]))
 
 		// send ETag, no matter if 200 or 304 (see https://tools.ietf.org/html/rfc7232#section-4.1)
@@ -160,23 +172,22 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 		inm := r.Header.Get("If-None-Match")
 		if inm != "" && strings.Contains(inm, etag) {
 			// no change here
-			w.WriteHeader(304)
+			w.WriteHeader(http.StatusNotModified)
 			return
 		}
 
 		w.Header().Set("Content-Type", f.MimeType)
-
 		content = f.Content
 	} else {
-		// we have not found matching static content, so we start searching our nodes list:
-		node := FindNode(urlpath, core.Nodes)
-		if node == nil {
-			node = FindApplicationEndpointNode(urlpath, core.Nodes)
-			if node == nil {
-				node = FindFallbackNode(urlpath, core.Nodes)
+		var (
+			node *Node
+		)
 
-				if node != nil {
-					http.Redirect(w, r, string(node.Path()), 303)
+		// we have not found matching static content, so we start searching our nodes list:
+		if node = FindNode(urlpath, core.Nodes); node == nil {
+			if node = FindApplicationEndpointNode(urlpath, core.Nodes); node == nil {
+				if node = FindFallbackNode(urlpath, core.Nodes); node != nil {
+					http.Redirect(w, r, string(node.Path()), http.StatusSeeOther)
 					return
 				}
 
@@ -188,7 +199,7 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 				for _, l := range acceptLang {
 					for _, n := range RootNodes(core.Nodes) {
 						if n.Language() == l.Lang && n.Enabled() {
-							http.Redirect(w, r, string(n.Path()), 303)
+							http.Redirect(w, r, string(n.Path()), http.StatusSeeOther)
 							return
 						}
 					}
@@ -201,7 +212,7 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 				for _, l := range acceptLang {
 					for _, n := range RootNodes(core.Nodes) {
 						if n.Language() == strings.Split(l.Lang, "-")[0] && n.Enabled() {
-							http.Redirect(w, r, string(n.Path()), 303)
+							http.Redirect(w, r, string(n.Path()), http.StatusSeeOther)
 							return
 						}
 					}
@@ -211,7 +222,7 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 				// we redirect to the first node that is available (aka: enabled)
 				for _, n := range RootNodes(core.Nodes) {
 					if n.Enabled() {
-						http.Redirect(w, r, string(n.Path()), 303)
+						http.Redirect(w, r, string(n.Path()), http.StatusSeeOther)
 						return
 					}
 				}
@@ -219,13 +230,13 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 				// you guessed it: we give up!
 				// Nothing to be found here!
 				// We are done.
-				http.Error(w, "not found", 404)
+				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 		}
 
 		if node.RedirectTo() != "" {
-			http.Redirect(w, r, strings.TrimSpace(string(node.RedirectTo())), 303)
+			http.Redirect(w, r, strings.TrimSpace(string(node.RedirectTo())), http.StatusSeeOther)
 			return
 		}
 
@@ -262,14 +273,14 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 
 			if err != nil {
 				log.Error().Msg(fmt.Sprintf("%s: %s", lr.String(), err.Error()))
-				w.WriteHeader(500)
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
 			err = gt.Execute(&buf, &context)
 			if err != nil {
 				log.Error().Msg(fmt.Sprintf("%s: %s", lr.String(), err.Error()))
-				w.WriteHeader(500)
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
@@ -283,8 +294,10 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Minify the content
-		page, err := core.minifier.String(t.MimeType(), string(context.Content))
-		if err != nil {
+		var (
+			page string
+		)
+		if page, err = core.minifier.String(t.MimeType(), string(context.Content)); err != nil {
 			// If minifying goes wrong for any reason, we leave the original content untouched and continue
 			page = string(context.Content)
 			log.Warn().Msg(err.Error())
@@ -298,14 +311,14 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 		// Etag in request matches our Etag? -> content has not chanced
 		inm := r.Header.Get("If-None-Match")
 		if inm != "" && strings.Contains(inm, etag) {
-			w.WriteHeader(304)
+			w.WriteHeader(http.StatusNotModified)
 			return
 		}
 
 		w.Header().Set("Content-Type", t.MimeType()+"; charset=UTF-8")
 
-		if strings.ToUpper(r.Method) != "HEAD" {
-			// don't send body if HTTP Method is HEAD
+		// only send body if HTTP Method is GET, HEAD does not expect a body
+		if strings.ToUpper(r.Method) == "GET" {
 			content = []byte(page)
 		}
 	}
@@ -318,15 +331,18 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 
 	// write content to response
 	if _, err = w.Write(content); err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
 func (core *Core) populateHeaders(filename string) {
-	var s bytes.Buffer
+	var (
+		err  error
+		s    bytes.Buffer
+		file []byte
+	)
 
-	file, err := afero.ReadFile(*core.fs, filename)
-	if err != nil {
+	if file, err = afero.ReadFile(*core.fs, filename); err != nil {
 		s.WriteString(" - ")
 		s.WriteString(err.Error())
 		log.Warn().Msg(s.String())
@@ -334,8 +350,7 @@ func (core *Core) populateHeaders(filename string) {
 		return
 	}
 
-	err = core.HTTPHeaders.Read(file)
-	if err != nil {
+	if err = core.HTTPHeaders.Read(file); err != nil {
 		s.WriteString(" - ")
 		s.WriteString(err.Error())
 		log.Warn().Msg(s.String())

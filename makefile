@@ -5,7 +5,7 @@ arm64:
 	CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build -a -ldflags '-s -w -extldflags "-static"'
 
 upx:
-	upx onacms
+	upx --lzma onacms
 
 docker: upx
 	dos2unix Dockerfile

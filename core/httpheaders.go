@@ -29,11 +29,8 @@ func (h *HTTPHeaders) Match(slug string) []string {
 	slug = strings.ToLower(slug)
 
 	for _, uri := range h.URI {
-		m, err := doublestar.Match(uri.Expression, slug)
-		if m && err == nil {
-			for _, h := range uri.Header {
-				result = append(result, h)
-			}
+		if m, err := doublestar.Match(uri.Expression, slug); m && err == nil {
+			result = append(result, uri.Header...)
 		}
 	}
 

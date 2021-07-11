@@ -21,12 +21,15 @@ type SearchResult struct {
 
 // NewNodeSearchable initialiser
 func NewNodeSearchable(node *Node) *NodeSearchable {
-	nodeSearchable := &NodeSearchable{}
+	var (
+		err            error
+		doc            *html.Node
+		nodeSearchable = &NodeSearchable{}
+		c              string
+		f              func(*html.Node)
+	)
 
-	doc, err := html.Parse(strings.NewReader(string(node.Render())))
-	if err == nil {
-		var c string
-		var f func(*html.Node)
+	if doc, err = html.Parse(strings.NewReader(string(node.Render()))); err == nil {
 		f = func(n *html.Node) {
 			if n.Type == html.TextNode {
 				c += n.Data
