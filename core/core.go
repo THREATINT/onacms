@@ -148,7 +148,7 @@ func (core *Core) HTTP(w http.ResponseWriter, r *http.Request) {
 	newurlpath = strings.ReplaceAll(newurlpath, "/\\", "/")
 
 	// if suffix '/' is present, remove to avoid "duplicate content" problem with search engines
-	for strings.HasSuffix(newurlpath, "/") {
+	for strings.HasSuffix(newurlpath, "/") && len(newurlpath) > 1 {
 		newurlpath = strings.TrimSuffix(newurlpath, "/")
 	}
 
